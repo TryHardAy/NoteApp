@@ -5,38 +5,37 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.profile {
+  position: absolute; 
+  top: 10px;          
+  right: 10px;        
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px; 
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.profile img {
+  width: 40px; 
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
 }
 
-.card {
-  padding: 2em;
+.profile h2, .profile p {
+  margin: 0;
+  padding: 0;
 }
 
-.read-the-docs {
-  color: #888;
+.profile h2 {
+  font-size: 1rem;
+}
+
+.profile p {
+  font-size: 0.8rem;
 }
