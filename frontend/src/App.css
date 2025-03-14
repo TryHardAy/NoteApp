@@ -39,3 +39,105 @@
 .profile p {
   font-size: 0.8rem;
 }
+
+/* InterfaceButton.css */
+
+.InterfaceButton {
+  padding: 12px 24px;                /* Wewnętrzny odstęp wokół tekstu */
+  background-color: #A7C7E7;         /* Pastelowy jasny niebieski */
+  color: #918c8c;                    /* Kolor tekstu - ciemnoszary */
+  border: 1px solid #A1B9C3;         /* Cienka obramówka w ciemniejszym odcieniu niebieskiego */
+  border-radius: 8px;                /* Zaokrąglone rogi */
+  cursor: pointer;                   /* Ręka wskazująca na przycisk */
+  font-size: 12px;                    /* Rozmiar czcionki */
+  font-weight: 400;                   /* Pogrubienie tekstu */
+  width: 120px;                       /* Stała szerokość przycisku */
+  height: 60px;                       /* Stała wysokość przycisku */
+  text-align: center;                 /* Wyrównanie tekstu na środku */
+  display: flex;                      /* Użycie flexboxa do wyśrodkowania zawartości */
+  justify-content: center;            /* Wyśrodkowanie poziome */
+  align-items: center;                /* Wyśrodkowanie pionowe */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Animacje tła i obramowania */
+}
+
+.InterfaceButton:hover {
+  background-color: #8DB6D4;         /* Trochę ciemniejszy odcień tła po najechaniu */
+  border-color: #8DB6D4;             /* Dopasowanie koloru obramowania do tła na hover */
+}
+
+/* Menu.css */
+
+/* Kontener menu */
+.menu-container {
+  position: fixed;                  /* Menu powinno być zawsze widoczne na górze */
+  top: 30px;
+  left: 0;
+  right: 0;
+  padding: 10px 0;                  /* Odstępy od góry i dołu */
+  background-color: #fff;           /* Tło białe */
+  border-radius: 15px;              /* Zaokrąglone rogi */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień pod menu */
+  z-index: 1000;                    /* Menu nad innymi elementami */
+  margin: 0 auto;                   /* Wyśrodkowanie menu */
+  max-width: 1280px;                /* Maksymalna szerokość menu */
+  width: 100%;                      /* Pełna szerokość ekranu */
+}
+
+/* Ustawienia dla menu */
+.menu {
+  display: flex;                    /* Flexbox do ustawienia przycisków w poziomie */
+  justify-content: flex-start;       /* Przyciski zaczynają się od lewej strony */
+  align-items: center;              /* Wyrównanie przycisków w pionie */
+  gap: 40px;                        /* Odstęp między przyciskami */
+  padding-left: 20px; 
+}
+/* Kontener dla pola input */
+.search-container {
+  padding: 5px 0;                  /* Odstępy od góry i dołu */
+  background-color: #8DB6D4;        /* Tło pastelowe niebieskie */
+  border-radius: 12px;              /* Zaokrąglone rogi */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień pod menu */
+  z-index: 1000;                    /* Menu nad innymi elementami */
+  margin-top: 30px;                 /* Odstęp od góry */
+  max-width: 1200px;                /* Maksymalna szerokość menu */
+  width: 100%;                      /* Pełna szerokość */
+  position: relative;
+  left: 5vh;
+  top:2vh;
+}
+
+/* Styl samego pola input */
+.search-input {
+  padding: 5px 10px;                /* Wewnętrzne odstępy (w poziomie i pionie) */
+  background-color: #8DB6D4;         /* Pastelowy jasny niebieski */
+  border: 1px solid #A1B9C3;         /* Cienka obramówka w ciemniejszym odcieniu */
+  border-radius: 25px;               /* Zaokrąglone rogi */
+  font-size: 12px;                    /* Rozmiar czcionki */
+  color: #6a6262;                    /* Kolor tekstu */
+  width: 1150px;                     /* Szerokość ustawiona na 1200px */
+  outline: none;                     /* Brak obramowania przy focus */
+  transition: all 0.3s ease;         /* Animacja */
+  margin-left: 5px;                  /* Odstęp po lewej stronie */
+  margin-right: 10px;                /* Odstęp po prawej stronie */
+}
+
+/* Placeholder - tekst pomocniczy (Szukaj) */
+.search-input::placeholder {
+  color: #6a6262;                    /* Kolor tekstu w placeholder */
+  opacity: 0.7;                      /* Mniej intensywny kolor placeholder */
+}
+
+/* Stylowanie przy focusie (gdy pole jest w użyciu) */
+.search-input:focus {
+  background-color: #A1B9C3;         /* Zmiana tła po kliknięciu */
+  border-color: #6a6262;             /* Zmiana koloru obramowania po kliknięciu */
+}
+
+.large-white-box {
+  background-color: white;            /* Tło na biało */
+  width: 1280px;                       /* Szerokość 3/4 szerokości ekranu (75% szerokości viewportu) */
+  height: 500px;                       /* Ustalona wysokość, np. 400px, ale możesz dostosować */
+  border-radius: 20px;                 /* Zaokrąglone rogi */
+  margin-top: 100px;                      /* Wyśrodkowanie na ekranie */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Delikatny cień wokół */
+}

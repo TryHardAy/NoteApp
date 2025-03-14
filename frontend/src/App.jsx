@@ -4,19 +4,21 @@ import LoginButton from "./components/LoginButton";
 import LogoutButton from "./components/LogoutButton";
 import Profile from "./components/UserProfile"; // Import the Profile component
 import './App.css';
-
+import Menu from "./components/Menu";
+import SearchInput from "./components/SearchInput";
 function App() {
   const { isAuthenticated } = useAuth0();
 
   return (
     <>
       <div>
-        <h1>Welcome to the bestest Note App</h1>
+          <Menu/>
 
         {!isAuthenticated ? (
           <LoginButton />
         ) : (
-          <div>
+          <div className="large-white-box">
+                      <SearchInput/>
             <p>You're logged in!</p>
             {/* Render the LogoutButton */}
             <LogoutButton />
