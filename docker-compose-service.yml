@@ -1,0 +1,38 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=tasks_db
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  db:
+    build: 
+      context: ./db
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: tasks_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - database:/var/lib/mysql
+
+volumes:
+  database:
