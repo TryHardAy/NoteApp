@@ -1,14 +1,17 @@
 import React from "react";
+import { Link } from 'react-router-dom';
 
 const InterfaceButton = ({ label, url }) => {
-  const handleClick = () => {
+  /*const handleClick = () => {
     window.location.href = url; 
-  };
+  };*/
 
   return (
-    <button className="InterfaceButton" onClick={handleClick}>
-      {label}
-    </button>
+    <Link to={url}>
+      <button className="InterfaceButton">
+        {label}
+      </button>
+    </Link>
   );
 };
 

@@ -1,3 +1,7 @@
+body
+{
+  background-color: #fcacbc;
+}
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -44,13 +48,13 @@
 
 .InterfaceButton {
   padding: 12px 24px;                /* Wewnętrzny odstęp wokół tekstu */
-  background-color: #A7C7E7;         /* Pastelowy jasny niebieski */
-  color: #918c8c;                    /* Kolor tekstu - ciemnoszary */
+  background-color: #b4e2ee;         /* Pastelowy jasny niebieski */
+  color: #3a3939;                    /* Kolor tekstu - ciemnoszary */
   border: 1px solid #A1B9C3;         /* Cienka obramówka w ciemniejszym odcieniu niebieskiego */
   border-radius: 8px;                /* Zaokrąglone rogi */
   cursor: pointer;                   /* Ręka wskazująca na przycisk */
-  font-size: 12px;                    /* Rozmiar czcionki */
-  font-weight: 400;                   /* Pogrubienie tekstu */
+  font-size: 1.0em;                    /* Rozmiar czcionki */
+  font-weight: 400;                  /* Pogrubienie tekstu */
   width: 120px;                       /* Stała szerokość przycisku */
   height: 60px;                       /* Stała wysokość przycisku */
   text-align: center;                 /* Wyrównanie tekstu na środku */
@@ -58,10 +62,11 @@
   justify-content: center;            /* Wyśrodkowanie poziome */
   align-items: center;                /* Wyśrodkowanie pionowe */
   transition: background-color 0.3s ease, border-color 0.3s ease; /* Animacje tła i obramowania */
+  font-family: system-ui, sans-serif;
 }
 
 .InterfaceButton:hover {
-  background-color: #8DB6D4;         /* Trochę ciemniejszy odcień tła po najechaniu */
+  background-color: #9ddceb;         /* Trochę ciemniejszy odcień tła po najechaniu */
   border-color: #8DB6D4;             /* Dopasowanie koloru obramowania do tła na hover */
 }
 
@@ -79,7 +84,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień pod menu */
   z-index: 1000;                    /* Menu nad innymi elementami */
   margin: 0 auto;                   /* Wyśrodkowanie menu */
-  max-width: 1280px;                /* Maksymalna szerokość menu */
+  max-width: 500px;                /* Maksymalna szerokość menu */
   width: 100%;                      /* Pełna szerokość ekranu */
 }
 
@@ -94,7 +99,7 @@
 /* Kontener dla pola input */
 .search-container {
   padding: 5px 0;                  /* Odstępy od góry i dołu */
-  background-color: #8DB6D4;        /* Tło pastelowe niebieskie */
+  background-color: #c4e5ed;        /* Tło pastelowe niebieskie */
   border-radius: 12px;              /* Zaokrąglone rogi */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień pod menu */
   z-index: 1000;                    /* Menu nad innymi elementami */
@@ -109,12 +114,12 @@
 /* Styl samego pola input */
 .search-input {
   padding: 5px 10px;                /* Wewnętrzne odstępy (w poziomie i pionie) */
-  background-color: #8DB6D4;         /* Pastelowy jasny niebieski */
+  background-color: #b4e2ee;         /* Pastelowy jasny niebieski */
   border: 1px solid #A1B9C3;         /* Cienka obramówka w ciemniejszym odcieniu */
-  border-radius: 25px;               /* Zaokrąglone rogi */
+  border-radius: 10px;               /* Zaokrąglone rogi */
   font-size: 12px;                    /* Rozmiar czcionki */
   color: #6a6262;                    /* Kolor tekstu */
-  width: 1150px;                     /* Szerokość ustawiona na 1200px */
+  width: 1160px;                     /* Szerokość ustawiona na 1200px */
   outline: none;                     /* Brak obramowania przy focus */
   transition: all 0.3s ease;         /* Animacja */
   margin-left: 5px;                  /* Odstęp po lewej stronie */
@@ -123,13 +128,13 @@
 
 /* Placeholder - tekst pomocniczy (Szukaj) */
 .search-input::placeholder {
-  color: #6a6262;                    /* Kolor tekstu w placeholder */
+  color: #585252;                    /* Kolor tekstu w placeholder */
   opacity: 0.7;                      /* Mniej intensywny kolor placeholder */
 }
 
 /* Stylowanie przy focusie (gdy pole jest w użyciu) */
 .search-input:focus {
-  background-color: #A1B9C3;         /* Zmiana tła po kliknięciu */
+  /*background-color: #c5e2eb; */        /* Zmiana tła po kliknięciu */
   border-color: #6a6262;             /* Zmiana koloru obramowania po kliknięciu */
 }
 
@@ -141,3 +146,20 @@
   margin-top: 100px;                      /* Wyśrodkowanie na ekranie */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Delikatny cień wokół */
 }
+
+.toolbox {
+  margin-bottom: 10px;
+}
+
+.toolbox button {
+  margin-right: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#editor {
+  border: none;
+  height: 300px;
+  padding: 10px;
+}
+

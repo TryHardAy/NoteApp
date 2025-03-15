@@ -5,10 +5,9 @@ const Menu = () => {
   return (
     <div className="menu-container">
       <div className="menu">
-        <InterfaceButton label="Home" />
-        <InterfaceButton label="About" />
-        <InterfaceButton label="Services" />
-        <InterfaceButton label="Contact" />
+        <InterfaceButton label="Moje pliki" url="/" />
+        <InterfaceButton label="Nowy plik" url="/editor" />
+        <InterfaceButton label="Użytkownicy" url="/users" />
       </div>
     </div>
   );
