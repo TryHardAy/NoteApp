@@ -163,3 +163,8 @@ body
   padding: 10px;
 }
 
+.ql-editor
+{
+  color: #213547 !important;
+  padding: 10px 15px 350px 15px !important;
+}
