@@ -168,3 +168,9 @@ body
   color: #213547 !important;
   padding: 10px 15px 350px 15px !important;
 }
+
+.ql-toolbar
+{
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
