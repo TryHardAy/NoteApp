@@ -70,6 +70,33 @@ body
   border-color: #8DB6D4;             /* Dopasowanie koloru obramowania do tła na hover */
 }
 
+/* InterfaceButton.css */
+
+.UserInterfaceButton {
+  padding: 12px 24px;                /* Wewnętrzny odstęp wokół tekstu */
+  background-color: #3a3939;         /* Pastelowy jasny niebieski */
+  color: #ffffff;                    /* Kolor tekstu - ciemnoszary */
+  border: 1px solid #A1B9C3;         /* Cienka obramówka w ciemniejszym odcieniu niebieskiego */
+  border-radius: 8px;                /* Zaokrąglone rogi */
+  cursor: pointer;                   /* Ręka wskazująca na przycisk */
+  font-size: 1.0em;                    /* Rozmiar czcionki */
+  font-weight: 400;                  /* Pogrubienie tekstu */
+  width: 120px;                       /* Stała szerokość przycisku */
+  height: 50px;                       /* Stała wysokość przycisku */
+  text-align: center;                 /* Wyrównanie tekstu na środku */
+  display: flex;                      /* Użycie flexboxa do wyśrodkowania zawartości */
+  justify-content: center;            /* Wyśrodkowanie poziome */
+  align-items: center;                /* Wyśrodkowanie pionowe */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Animacje tła i obramowania */
+  font-family: system-ui, sans-serif;
+}
+
+.UserInterfaceButton:hover {
+  background-color: #4f4f4f;         /* Trochę ciemniejszy odcień tła po najechaniu */
+  border-color: #343434;             /* Dopasowanie koloru obramowania do tła na hover */
+}
+
+
 /* Menu.css */
 
 /* Kontener menu */
@@ -96,6 +123,29 @@ body
   gap: 40px;                        /* Odstęp między przyciskami */
   padding-left: 20px; 
 }
+
+.usermenu-container {
+  display: flex;
+  flex-direction: column; /* Ustawienie elementów jeden pod drugim */
+  padding: 6px 0;                   /* Mniejsze odstępy od góry i dołu */
+  background-color: #b4e2ee;           
+  border-radius: 12px;              /* Zaokrąglone rogi */
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);  
+  z-index: 999;                     /* Pod menu, ale nad innymi elementami */
+  margin: 0 auto;                   
+  max-width: 500px;                
+  width: 100%;                     
+}
+
+/* Styl dla zawartości usermenu */
+.usermenu {
+  display: flex;                    
+  justify-content: flex-start;      
+  align-items: center;              
+  gap: 30px;                        
+  padding-left: 20px; 
+}
+
 /* Kontener dla pola input */
 .search-container {
   padding: 5px 0;                  /* Odstępy od góry i dołu */
@@ -103,7 +153,7 @@ body
   border-radius: 12px;              /* Zaokrąglone rogi */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień pod menu */
   z-index: 1000;                    /* Menu nad innymi elementami */
-  margin-top: 30px;                 /* Odstęp od góry */
+  margin-top: 5px;                 /* Odstęp od góry */
   max-width: 1200px;                /* Maksymalna szerokość menu */
   width: 100%;                      /* Pełna szerokość */
   position: relative;
@@ -163,3 +213,49 @@ body
   padding: 10px;
 }
 
+
+
+
+
+/* Style dla formularza */
+.form-container {
+  background-color: #ADD8E6; /* Jasnoniebieski kolor tła */
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  margin: 0 auto;
+}
+
+/* Style dla kontenera z inputami */
+.input-container {
+  margin-bottom: 15px;
+}
+
+/* Style dla label */
+.input-container label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+/* Style dla pola input */
+.input-container input,
+.input-container select {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Style dla przycisku */
+.submit-button {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
