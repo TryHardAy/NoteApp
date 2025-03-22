@@ -14,7 +14,11 @@ import UserForm from "./components/UserForm";
 
 
 function App() {
-  const { isAuthenticated } = useAuth0();
+  const { isAuthenticated, user, loginWithRedirect, logout, isLoading } = useAuth0();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Router>
