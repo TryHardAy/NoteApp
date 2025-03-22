@@ -1,3 +1,5 @@
 fastApi
 pydantic
 uvicorn
+pymysql
+cryptography
