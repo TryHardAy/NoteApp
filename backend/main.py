@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from pymysql import connect
 from pymysql.cursors import Cursor
 from collections import defaultdict
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request
 
 
 config = {
@@ -12,7 +14,21 @@ config = {
     "database": "NotesDB",
 }
 
+origins = [
+    "http://localhost:5173",  # frontend
+    "http://localhost:5000" #backend
+]
+
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Możesz dodać więcej URLi, jeśli potrzebujesz
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class User(BaseModel):
@@ -23,18 +39,15 @@ class User(BaseModel):
 
 
 class Note(BaseModel):
-    id: int
-    title: str
+    title: str = "Abc"
     content: str
-    permission: int
 
-    #def __init__(self, id: int, title: str, content: str, permission: int):
-        #self.id = id
-        #self.title = title
-        #self.content = content
-        #self.permission = permission
-        #super().__init__()
+class NewNote(BaseModel):
+    #title: str
+    content: str
 
+class Category(BaseModel):
+    name: str
 
 @app.post("/newUser")
 async def create_user(user: User):
@@ -65,62 +78,45 @@ VALUES (%s, %s, %s, LAST_INSERT_ID());
     values = (user.name, user.last_name, user.email)
     cursor.execute(query2, values)
 
-
-@app.get("/notes")
-async def get_User_Notes(email: str) -> dict[str, list[Note] | str]:
-    data = "Nie udalo się pobrac Notatnikow"
-
+@app.post("/newCategory")  # Endpoint do dodawania kategorii
+async def create_category(category: Category):
+    print("Tworzenie kategorii...")
     with connect(**config) as connection:
         cursor = connection.cursor()
-        try:
-            data = get_Notes(email, cursor)
-        except:
-            print("Nie udało się pobrać Notesow z bazy danych")
-            
+        save_category(category, cursor)  # Funkcja do zapisywania kategorii
         cursor.close()
         connection.commit()
 
-    return {"notes": data}
+    return {"msg": "Zapisano kategorię"}
 
 
-def get_Notes(email: str, cursor: Cursor) -> list[Note]:
+def save_category(category: Category, cursor: Cursor):
     query1 = """
-SELECT Notes.id, Notes.note_name, Notes.content, UserNotes.permission FROM Notes
-INNER JOIN UserNotes ON Notes.id = UserNotes.note_id
-INNER JOIN Users ON UserNotes.user_id = Users.id
-WHERE Users.email = %s;
+INSERT INTO Categories (name)
+VALUES (%s);
 """
+    # Zapisywanie kategorii
+    cursor.execute(query1, (category.name,))
+
+def save_note(note: Note, cursor: Cursor):
+    query = """
+    INSERT INTO Notes (note_name, content)
+    VALUES (%s, %s);
+    """
+    cursor.execute(query, (note.title, note.content))
+
+@app.post("/newNote")  
+async def create_note(note: Note):
+    print("zaczelo sie")
     
-    cursor.execute(query1, (email))
-    notes1 = cursor.fetchall()
-
-    query2 = """
-SELECT Notes.id, Notes.note_name, Notes.content, CategoryNotes.permission FROM Notes
-INNER JOIN CategoryNotes ON Notes.id = CategoryNotes.note_id
-INNER JOIN Categories ON CategoryNotes.category_id = Categories.id
-INNER JOIN UserCategories ON Category.id = UserCategories.category_id
-INNER JOIN Users ON UserCategories.user_id = Users.id
-WHERE Users.email = %s;
-"""
-
-    cursor.execute(query2, (email))
-    notes2 = cursor.fetchall()
-
-    notes: tuple[tuple[int, str, str, int]] = notes1 + notes2
-
-    no_duplicats_notes = []
-    grouped = defaultdict(list)
-
-    for item in notes:
-        grouped[item[0]].append(item)
-
-    for key, group in grouped.items():
-        max_item = max(group, key=lambda x: x[-1])
-        no_duplicats_notes.append(Note(
-            id=max_item[0], 
-            title=max_item[1], 
-            content=max_item[2], 
-            permission=max_item[3]
-            ))
+    with connect(**config) as connection:
+        cursor = connection.cursor()
+        print("zapisuje")
+        save_note(note, cursor)  # Save the entire note object, including title and content
+        print("zapisalem")
+        cursor.close()
+        connection.commit()
     
-    return no_duplicats_notes
+    print("skonczylo sie")
+    return {"msg": "Zapisano notatkę"}
+

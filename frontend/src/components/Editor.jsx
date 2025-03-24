@@ -31,17 +31,17 @@ const Editor = () => {
     }
 
     // Handle online/offline status changes
-    const handleOnline = () => {
+    /*const handleOnline = () => {
       setIsOffline(false);
       syncContentToServer(); // Try syncing content when coming online
-    };
+    };*/
 
     const handleOffline = () => {
       setIsOffline(true);
     };
 
     // Attach event listeners for online/offline changes
-    window.addEventListener('online', handleOnline);
+    //window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
     // Initial check for online/offline status
@@ -50,7 +50,7 @@ const Editor = () => {
     }
 
     return () => {
-      window.removeEventListener('online', handleOnline);
+      //window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
@@ -66,23 +66,25 @@ const Editor = () => {
   // Function to send content to the server
   const syncContentToServer = async () => {
     const content = localStorage.getItem('draftDocument');
-    if (content && navigator.onLine) {
+    if (true) {
+      const title = "Sample Title"; // Add logic to generate or get the title
       try {
-        // Send the content to the server (FastAPI)
-        await fetch('/api/save-document', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ content }),
-        });
-        console.log('Document saved to the server');
-        localStorage.removeItem('draftDocument'); // Clear the saved content after successful sync
+          // Send the content to the server (FastAPI)
+          await fetch('http://localhost:5000/newNote', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: `{ "content": "${content}" }`,  // Send the full note data
+          });
+          localStorage.removeItem('draftDocument'); // Clear the saved content after successful sync
       } catch (error) {
-        console.error('Failed to save document to server:', error);
+          console.error('Failed to save document to server:', error);
       }
     }
   };
+  
+
 
   // Function to handle the "Get Content" button click
   const handleGetContent = () => {
@@ -99,6 +101,12 @@ const Editor = () => {
         disabled={isOffline} // Disable the button if offline
       >
         Get Content
+      </button>
+      <button 
+        onClick={syncContentToServer} 
+        disabled={isOffline} // Disable the button if offline
+      >
+        Send Content
       </button>
       {isOffline && <p>You are offline. Changes are saved locally.</p>}
     </div>
