@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS UserCategories(
 
 CREATE TABLE IF NOT EXISTS Notes(
     id INT PRIMARY KEY AUTO_INCREMENT,
-    note_name VARCHAR(50),
+    title VARCHAR(50),
     content TEXT
 );
 

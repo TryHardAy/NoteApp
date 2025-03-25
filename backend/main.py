@@ -100,7 +100,7 @@ VALUES (%s);
 
 def save_note(note: Note, cursor: Cursor):
     query = """
-    INSERT INTO Notes (note_name, content)
+    INSERT INTO Notes (title, content)
     VALUES (%s, %s);
     """
     cursor.execute(query, (note.title, note.content))
