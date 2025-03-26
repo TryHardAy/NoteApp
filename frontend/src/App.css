@@ -281,15 +281,17 @@ body
 }
 
 .note-card {
-  display: flex;  /* ✅ Ustawienie elementów w jednej linii */
-  align-items: center;  /* ✅ Wyśrodkowanie w pionie */
-  justify-content: flex-start; /* ✅ Wyrównanie do lewej */
+  display: flex;  
+  align-items: center;
+  justify-content: space-between;
   border-radius: 20px;
   background: #eaf8fb;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   gap: 50px;
   width: 95%;
   margin: 0 auto;
+  position: relative;
+  color: black !important;
 }
 
 .note-card h3 {
@@ -299,7 +301,7 @@ body
 }
 
 .note-card span {
-  margin-left: 20px;  /* ✅ Odstęp między ID a tytułem */
+  margin-left: 20px;
   font-size: 14px;
   color: #666;
 }
@@ -310,4 +312,39 @@ body
 
 .note-title {
   cursor: pointer;
+}
+
+.menu-container {
+  position: fixed;
+}
+
+.menu-icon {
+  cursor: pointer;
+  margin-top: 5px;;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 25px;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-menu button:hover {
+  background: #f0f0f0;
 }
