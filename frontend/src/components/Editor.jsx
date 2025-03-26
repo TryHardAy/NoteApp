@@ -1,111 +1,73 @@
-import React, { useEffect, useRef, useState } from 'react';
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css';
+import React, { useEffect, useState } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { useParams } from "react-router-dom";
 
 const Editor = () => {
-  const editorRef = useRef(null);
-  const quillRef = useRef(null);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine); // Track offline status
+  const { id } = useParams();
+  const [content, setContent] = useState("");
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
-  // Initialize Quill editor when the component mounts
+  // Pobieranie notatki z API po załadowaniu komponentu
   useEffect(() => {
-    if (editorRef.current && !quillRef.current) {
-      quillRef.current = new Quill(editorRef.current, {
-        theme: 'snow',
-        modules: {
-          toolbar: true,
-        },
-      });
-
-      // Load saved content from local storage (if available)
-      const savedContent = localStorage.getItem('draftDocument');
-      if (savedContent) {
-        quillRef.current.root.innerHTML = savedContent; // Load saved content into the editor
+    const fetchNote = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/notes/${id}`);
+        const data = await response.json();
+        setContent(data.content || ""); // Ustawienie treści notatki
+      } catch (error) {
+        console.error("Błąd podczas pobierania notatki:", error);
       }
-
-      // Listen for text-change event to track changes and save to localStorage
-      quillRef.current.on('text-change', () => {
-        const content = quillRef.current.root.innerHTML;
-        localStorage.setItem('draftDocument', content); // Save content to local storage
-      });
-    }
-
-    // Handle online/offline status changes
-    /*const handleOnline = () => {
-      setIsOffline(false);
-      syncContentToServer(); // Try syncing content when coming online
-    };*/
-
-    const handleOffline = () => {
-      setIsOffline(true);
     };
 
-    // Attach event listeners for online/offline changes
-    //window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    fetchNote();
+  }, [id]);
 
-    // Initial check for online/offline status
-    if (!navigator.onLine) {
-      setIsOffline(true);
-    }
+  // Obsługa offline/online
+  useEffect(() => {
+    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => setIsOffline(false);
+
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
 
     return () => {
-      //window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
     };
   }, []);
 
-  // Function to get the current editor content
-  const getEditorContent = () => {
-    if (quillRef.current) {
-      return quillRef.current.root.innerHTML;
+  // Zapisywanie treści w localStorage, jeśli użytkownik jest offline
+  useEffect(() => {
+    if (isOffline) {
+      localStorage.setItem("draftDocument", content);
     }
-    return '';
-  };
+  }, [content, isOffline]);
 
-  // Function to send content to the server
+  // Wysyłanie treści do serwera
   const syncContentToServer = async () => {
-    const content = localStorage.getItem('draftDocument');
-    if (true) {
-      const title = "Sample Title"; // Add logic to generate or get the title
-      try {
-          // Send the content to the server (FastAPI)
-          await fetch('http://localhost:5000/newNote', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: `{ "content": "${content}" }`,  // Send the full note data
-          });
-          localStorage.removeItem('draftDocument'); // Clear the saved content after successful sync
-      } catch (error) {
-          console.error('Failed to save document to server:', error);
-      }
+    try {
+      await fetch("http://localhost:5000/newNote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content }),
+      });
+      localStorage.removeItem("draftDocument"); // Czyść lokalny zapis po synchronizacji
+    } catch (error) {
+      console.error("Błąd podczas zapisu na serwer:", error);
     }
-  };
-  
-
-
-  // Function to handle the "Get Content" button click
-  const handleGetContent = () => {
-    const content = getEditorContent(); // Get the current content of the editor
-    console.log(content); // Log it to the console (or you can use it in another way)
-    quillRef.current.setText(''); // Clear the content from the editor
   };
 
   return (
     <div>
-      <div ref={editorRef} style={{ minHeight: '300px', padding: '10px' }}></div>
-      <button 
-        onClick={handleGetContent} 
-        disabled={isOffline} // Disable the button if offline
-      >
-        Get Content
-      </button>
-      <button 
-        onClick={syncContentToServer} 
-        disabled={isOffline} // Disable the button if offline
-      >
+      <ReactQuill
+        value={content}
+        onChange={setContent}
+        style={{ minHeight: "300px", padding: "10px" }}
+      />
+      <button onClick={syncContentToServer} disabled={isOffline}>
         Send Content
       </button>
       {isOffline && <p>You are offline. Changes are saved locally.</p>}

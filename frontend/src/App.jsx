@@ -11,6 +11,8 @@ import Editor from "./components/Editor";
 import UserMenu from "./components/UserMenu";
 import Form from "./components/CategoryForm";
 import UserForm from "./components/UserForm";
+import NotesList from "./components/NotesList";
+//import NotesList from "./components/NotesList";
 
 
 function App() {
@@ -33,7 +35,7 @@ function App() {
                 <div className="large-white-box">
                   <Menu />
                   <SearchInput />
-
+                  <NotesList />
                   <div className="profile">
                     <Profile />
                   </div>
@@ -44,6 +46,25 @@ function App() {
         />
         <Route
           path="/editor" 
+          element={
+            <div>
+              {!isAuthenticated ? (
+                <LoginButton />
+              ) : (
+                <div className="large-white-box">
+                  <Menu />
+                  <Editor />
+                  
+                  <div className="profile">
+                    <Profile />
+                  </div>
+                </div>
+              )}
+            </div>
+          }
+        />
+        <Route
+          path="/editor/:id" 
           element={
             <div>
               {!isAuthenticated ? (

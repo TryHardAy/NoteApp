@@ -5,6 +5,7 @@ from pymysql.cursors import Cursor
 from collections import defaultdict
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Request
+#from mysql.connector import connect, Error 
 
 
 config = {
@@ -120,3 +121,23 @@ async def create_note(note: Note):
     print("skonczylo sie")
     return {"msg": "Zapisano notatkę"}
 
+@app.get("/notes")
+async def get_notes():
+    with connect(**config) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT id, title FROM Notes")
+        rows = cursor.fetchall()
+        cursor.close()
+        
+        notes = [{"id": row[0], "title": row[1]} for row in rows]
+        return notes
+
+@app.get("/notes/{note_id}")
+async def get_note(note_id: int):
+    with connect(**config) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT content FROM Notes WHERE id = %s", (note_id,))
+        note = cursor.fetchone()
+        if note:
+            return {"content": note[0]}
+        return {"error": "Notatka nie istnieje"}

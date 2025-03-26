@@ -270,3 +270,44 @@ body
   cursor: pointer;
   width: 100%;
 }
+
+
+/* Style bloczkow w liscie plikow */
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.note-card {
+  display: flex;  /* ✅ Ustawienie elementów w jednej linii */
+  align-items: center;  /* ✅ Wyśrodkowanie w pionie */
+  justify-content: flex-start; /* ✅ Wyrównanie do lewej */
+  border-radius: 20px;
+  background: #eaf8fb;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  gap: 50px;
+  width: 95%;
+  margin: 0 auto;
+}
+
+.note-card h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.note-card span {
+  margin-left: 20px;  /* ✅ Odstęp między ID a tytułem */
+  font-size: 14px;
+  color: #666;
+}
+
+.note-card p{
+  margin-left: 15px;
+}
+
+.note-title {
+  cursor: pointer;
+}
