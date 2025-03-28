@@ -40,6 +40,13 @@ class User(BaseModel):
     password: str
 
 
+class User2(BaseModel):
+    id: int
+    name: str
+    last_name: str
+    email: str
+
+
 class Note(BaseModel):
     title: str = "Abc"
     content: str
@@ -51,6 +58,11 @@ class NewNote(BaseModel):
 
 
 class Category(BaseModel):
+    name: str
+
+
+class Category2(BaseModel):
+    id: int
     name: str
 
 
@@ -216,10 +228,11 @@ ON DUPLICATE KEY UPDATE
 
         connection.commit()
         cursor.close()
+    return "Zapisano uprawnienia poprawnie"
 
 
 @app.get("/categories")
-async def get_categories() -> list[tuple[int, str]]:
+async def get_categories() -> list[Category2]:
     with connect(**config) as connection:
         cursor = connection.cursor()
 
@@ -228,11 +241,12 @@ async def get_categories() -> list[tuple[int, str]]:
 
         connection.commit()
         cursor.close()
-    return categories
+
+    return [Category2(id=x[0], name=x[1]) for x in categories]
 
 
-@app.get("/Users/some/{user_id}/{part}")
-async def get_some_users(part: str, user_id: int) -> list[tuple[int, str, str, str]]:
+@app.get("/Users/some/{user_id}")
+async def get_some_users(part: str, user_id: int) -> list[User2]:
     with connect(**config) as connection:
         cursor = connection.cursor()
 
@@ -250,5 +264,5 @@ AND id != {user_id};
 
         connection.commit()
         cursor.close()
-    return users
+    return [User2(id=x[0], name=x[1], last_name=x[2], email=x[3]) for x in users]
 
