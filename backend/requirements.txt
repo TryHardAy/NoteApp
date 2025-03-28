@@ -3,3 +3,4 @@ pydantic
 uvicorn
 pymysql
 cryptography
+python-multipart

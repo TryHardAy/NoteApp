@@ -1,10 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
 from pydantic import BaseModel
 from pymysql import connect
 from pymysql.cursors import Cursor
 from collections import defaultdict
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Request
+from typing import Annotated
 #from mysql.connector import connect, Error 
 
 
@@ -43,12 +44,30 @@ class Note(BaseModel):
     title: str = "Abc"
     content: str
 
+
 class NewNote(BaseModel):
     #title: str
     content: str
 
+
 class Category(BaseModel):
     name: str
+
+
+class SomeUser(BaseModel):
+    id: int
+    name: str
+    last_name: str
+    email: str
+
+
+class NewPermissionsForm(BaseModel):
+    note_id: int
+    category_id: int
+    category_permission: int
+    user_id: int
+    user_permission: int
+
 
 @app.post("/newUser")
 async def create_user(user: User):
@@ -99,12 +118,14 @@ VALUES (%s);
     # Zapisywanie kategorii
     cursor.execute(query1, (category.name,))
 
+
 def save_note(note: Note, cursor: Cursor):
     query = """
     INSERT INTO Notes (title, content)
     VALUES (%s, %s);
     """
     cursor.execute(query, (note.title, note.content))
+
 
 @app.post("/newNote")  
 async def create_note(note: Note):
@@ -121,6 +142,7 @@ async def create_note(note: Note):
     print("skonczylo sie")
     return {"msg": "Zapisano notatkę"}
 
+
 @app.get("/notes")
 async def get_notes():
     with connect(**config) as connection:
@@ -132,6 +154,7 @@ async def get_notes():
         notes = [{"id": row[0], "title": row[1]} for row in rows]
     return notes
 
+
 @app.get("/notes/{note_id}")
 async def get_note(note_id: int):
     with connect(**config) as connection:
@@ -142,7 +165,8 @@ async def get_note(note_id: int):
     if note:
         return {"content": note[0]}
     return {"error": "Notatka nie istnieje"}
-    
+
+
 @app.delete("/notes/{note_id}")
 async def delete_note(note_id: int):
     with connect(**config) as connection:
@@ -152,6 +176,7 @@ async def delete_note(note_id: int):
         cursor.close()
     return {"message": f"Notatka {note_id} została usunięta"}
 
+
 @app.put("/notes/{note_id}")
 async def update_note(note_id: int, note: dict):
     with connect(**config) as connection:
@@ -160,3 +185,19 @@ async def update_note(note_id: int, note: dict):
         connection.commit()
         cursor.close()
     return {"message": f"Notatka {note_id} została zaktualizowana"}
+
+
+@app.put("/note/category/add")
+async def add_category_user_permission(data: Annotated[NewPermissionsForm, Form()]):
+    pass
+
+
+@app.get("/categories")
+async def get_categories() -> list[list[int, str]]:
+    pass
+
+
+@app.get("/Users/some")
+async def get_some_users(part: str) -> list[SomeUser]:
+    pass
+
