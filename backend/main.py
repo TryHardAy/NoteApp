@@ -54,19 +54,12 @@ class Category(BaseModel):
     name: str
 
 
-class SomeUser(BaseModel):
-    id: int
-    name: str
-    last_name: str
-    email: str
-
-
 class NewPermissionsForm(BaseModel):
     note_id: int
-    category_id: int
-    category_permission: int
-    user_id: int
-    user_permission: int
+    category_id: int = None
+    category_permission: int = None
+    user_id: int = None
+    user_permission: int = None
 
 
 @app.post("/newUser")
@@ -189,15 +182,73 @@ async def update_note(note_id: int, note: dict):
 
 @app.put("/note/category/add")
 async def add_category_user_permission(data: Annotated[NewPermissionsForm, Form()]):
-    pass
+    if data.category_id == 0 and data.user_id == 0:
+        return "Brak danych do zapisania"
+    
+    with connect(**config) as connection:
+        cursor = connection.cursor()
+
+        template = """
+INSERT INTO {table}({column}, note_id, permission)
+VALUES (%s, %s, %s)
+ON DUPLICATE KEY UPDATE
+    permission = %s;
+"""
+        if data.category_id != 0:
+            query = template.format(table='CategoryNotes', column='category_id')
+            cursor.execute(query, (
+                data.category_id,
+                data.note_id,
+                data.category_permission,
+                data.category_permission
+                ))
+            print("Przypisano Categorie do Notatki")
+        
+        if data.user_id != 0:
+            query = template.format(table='UserNotes', column='user_id')
+            cursor.execute(query, (
+                data.user_id,
+                data.note_id,
+                data.user_permission,
+                data.user_permission
+                ))
+            print("Przypisano Usera do Notatki")
+
+        connection.commit()
+        cursor.close()
 
 
 @app.get("/categories")
-async def get_categories() -> list[list[int, str]]:
-    pass
+async def get_categories() -> list[tuple[int, str]]:
+    with connect(**config) as connection:
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM Categories")
+        categories = list(cursor.fetchall())
+
+        connection.commit()
+        cursor.close()
+    return categories
 
 
-@app.get("/Users/some")
-async def get_some_users(part: str) -> list[SomeUser]:
-    pass
+@app.get("/Users/some/{user_id}/{part}")
+async def get_some_users(part: str, user_id: int) -> list[tuple[int, str, str, str]]:
+    with connect(**config) as connection:
+        cursor = connection.cursor()
+
+        query = f"""
+SELECT id, name, last_name, email
+FROM Users 
+WHERE (name LIKE '{part}%' 
+OR last_name LIKE '{part}%' 
+OR CONCAT(name, ' ', last_name) LIKE '{part}%' 
+OR CONCAT(last_name, ' ', name) LIKE '{part}%')
+AND id != {user_id};
+"""
+        cursor.execute(query)
+        users = list(cursor.fetchall())
+
+        connection.commit()
+        cursor.close()
+    return users
 
