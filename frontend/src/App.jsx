@@ -13,7 +13,7 @@ import Form from "./components/CategoryForm";
 import UserForm from "./components/UserForm";
 import NotesList from "./components/NotesList";
 //import NotesList from "./components/NotesList";
-
+import TagForm from "./components/ShareForm";
 
 function App() {
   const { isAuthenticated, user, loginWithRedirect, logout, isLoading } = useAuth0();
@@ -82,6 +82,29 @@ function App() {
             </div>
           }
         />
+<Route
+  path="/share/:id"
+  element={
+    <div>
+      {!isAuthenticated ? (
+        <LoginButton />
+      ) : (
+        <div className="tag-form">
+          <TagForm />
+          <div className="large-white-box">
+            <Menu />
+            <SearchInput />
+            <NotesList />
+            <div className="profile">
+              <Profile />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  }
+/>
+
         {/*<Route path="/users" element={<Users />} />*/}
         <Route
           path="/users" 

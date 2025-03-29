@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
+import TagForm from "./ShareForm";
 
 const NotesList = () => {
   const [notes, setNotes] = useState([]);
   const [menuOpen, setMenuOpen] = useState(null);
+  const [popupNoteId, setPopupNoteId] = useState(null); // Przechowuje ID notatki do popupu
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,15 +37,6 @@ const NotesList = () => {
     }
   };
 
-  if (notes.length === 0) return null;
-
-  // TO DO: funkcja do wyswietlania formularza z nadawaniem kategorii i dostepu
-  // Dummy funkcja
-  const handleShare = (noteId) => {
-    console.log(`Udostępnianie notatki o ID: ${noteId}`);
-  };
-  
-
   return (
     <div className="notes-list">
       {notes.map((note) => (
@@ -67,13 +61,23 @@ const NotesList = () => {
                 <button onClick={() => navigate(`/editor/${note.id}`)}>
                   ✏️ Edytuj
                 </button>
-                <button onClick={() => handleShare(note.id)}>🔗 Udostępnij</button>
+                <button onClick={() => setPopupNoteId(note.id)}>🔗 Udostępnij</button>
                 <button onClick={() => handleDelete(note.id)}>🗑️ Usuń</button>
               </div>
             )}
           </div>
         </div>
       ))}
+
+      {/* Popup dla przypisania kategorii */}
+      {popupNoteId && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <TagForm noteId={popupNoteId} onSave={() => setPopupNoteId(null)} />
+            <button className="close-btn" onClick={() => setPopupNoteId(null)}> Zamknij</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

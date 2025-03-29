@@ -348,3 +348,63 @@ body
 .dropdown-menu button:hover {
   background: #f0f0f0;
 }
+
+
+
+
+
+/* Styl dla overlay, żeby zasłaniał resztę strony */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7); /* Lekko przezroczyste tło */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* Upewnij się, że popup jest nad resztą */
+}
+
+/* Główne okienko popupu */
+.popup {
+  background: lightblue; /* Jasnoniebieskie tło */
+  color: black; /* Czarne litery */
+  padding: 30px;
+  border-radius: 15px; /* Zaokrąglone rogi */
+  text-align: center;
+  width: 400px; /* Szerokość okna */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* Cień wokół okna */
+  transition: transform 0.3s ease-in-out; /* Efekt przejścia przy otwieraniu/ zamykaniu */
+}
+
+/* Styl dla elementów select (czarne tło, białe litery) */
+.popup select {
+  background-color: black; /* Czarne tło dla select */
+  color: white; /* Białe litery */
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  margin: 5px 0;
+  font-size: 16px;
+  width: 100%; /* Dopasowanie szerokości do kontenera */
+}
+
+/* Przycisk zamknięcia */
+.close-btn {
+  margin-top: 15px;
+  background: red;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+/* Zmiana koloru przy najechaniu na przycisk */
+.close-btn:hover {
+  background-color: darkred;
+}
