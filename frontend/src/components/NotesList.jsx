@@ -13,7 +13,7 @@ const NotesList = () => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await fetch("http://localhost:5000/notes");
+        const response = await fetch("http://localhost:5000/notes/1"); // Zamienić potem "1" na user_id
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
           setNotes(data);
@@ -28,7 +28,7 @@ const NotesList = () => {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/notes/${id}`, {
+      await fetch(`http://localhost:5000/note/${id}`, {
         method: "DELETE",
       });
       setNotes(notes.filter((note) => note.id !== id));

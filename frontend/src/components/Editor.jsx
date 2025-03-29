@@ -15,7 +15,7 @@ const Editor = () => {
     const fetchNote = async () => {
       if (!id) return;
       try {
-        const response = await fetch(`http://localhost:5000/notes/${id}`);
+        const response = await fetch(`http://localhost:5000/note/${id}`);
         const data = await response.json();
         if (data.content) {
           setContent(data.content);
@@ -57,14 +57,14 @@ const Editor = () => {
     try {
       if (isEditing) {
         // 🔄 UPDATE istniejącej notatki (PUT)
-        await fetch(`http://localhost:5000/notes/${id}`, {
+        await fetch(`http://localhost:5000/note/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       } else {
         // 🆕 Tworzenie nowej notatki (POST)
-        await fetch("http://localhost:5000/newNote", {
+        await fetch("http://localhost:5000/note/create/1", { // Zamienić potem "1" na user_id
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
