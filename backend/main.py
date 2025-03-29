@@ -245,23 +245,7 @@ async def get_categories() -> list[Category2]:
     return [Category2(id=x[0], name=x[1]) for x in categories]
 
 
-@app.get("/Users/some/{user_id}")
-async def get_some_users(part: str, user_id: int) -> list[User2]:
-    with connect(**config) as connection:
-        cursor = connection.cursor()
+@app.get("/Users/some")
+async def get_some_users(part: str) -> list[SomeUser]:
+    pass
 
-        query = f"""
-SELECT id, name, last_name, email
-FROM Users 
-WHERE (name LIKE '{part}%' 
-OR last_name LIKE '{part}%' 
-OR CONCAT(name, ' ', last_name) LIKE '{part}%' 
-OR CONCAT(last_name, ' ', name) LIKE '{part}%')
-AND id != {user_id};
-"""
-        cursor.execute(query)
-        users = list(cursor.fetchall())
-
-        connection.commit()
-        cursor.close()
-    return [User2(id=x[0], name=x[1], last_name=x[2], email=x[3]) for x in users]
