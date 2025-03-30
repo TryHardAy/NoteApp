@@ -20,7 +20,7 @@ const Editor = () => {
         const data = await response.json();
         if (data.content) {
           setContent(data.content);
-          setTitle(data.title || "");
+          setTitle(data.title || ""); // Pobranie tytułu z bazy danych
           setIsEditing(true);
         }
       } catch (error) {

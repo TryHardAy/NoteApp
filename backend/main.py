@@ -214,14 +214,33 @@ async def delete_note(note_id: int):
     return {"message": f"Notatka {note_id} została usunięta"}
 
 
-@app.put("/note/{note_id}")
+"""@app.put("/note/{note_id}")
 async def update_note(note_id: int, note: dict):
     with connect(**config) as connection:
         cursor = connection.cursor()
         cursor.execute("UPDATE Notes SET content = %s WHERE id = %s", (note["content"], note_id))
         connection.commit()
         cursor.close()
+    return {"message": f"Notatka {note_id} została zaktualizowana"}"""
+
+@app.put("/note/{note_id}")
+async def update_note(note_id: int, note: Note):
+    with connect(**config) as connection:
+        cursor = connection.cursor()
+        update_note_in_db(note, note_id, cursor)  # Update the note with the given id
+        connection.commit()
+        cursor.close()
+    
     return {"message": f"Notatka {note_id} została zaktualizowana"}
+
+def update_note_in_db(note: Note, note_id: int, cursor: Cursor):
+    # Query to update both title and content
+    query1 = """
+    UPDATE Notes
+    SET title = %s, content = %s
+    WHERE id = %s;
+    """
+    cursor.execute(query1, (note.title, note.content, note_id))
 
 
 @app.put("/note/category/add")
