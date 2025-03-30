@@ -16,11 +16,62 @@ import NotesList from "./components/NotesList";
 import TagForm from "./components/ShareForm";
 
 function App() {
-  const { isAuthenticated, user, loginWithRedirect, logout, isLoading } = useAuth0();
+  const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  /*const fetchUsers = async () => {
+    if (!isAuthenticated) {
+      console.log("User is not authenticated.");
+      return;
+    }
+
+    try {
+      const accessToken = await getAccessTokenSilently({
+        audience: `https://dev-r42s3taej0vvgom1.eu.auth0.com/api/v2/`, // Sprawdź swój audience
+        scope: 'read:users', // Zakres dostępu
+      });
+
+      console.log("Access Token: ", accessToken);
+
+      const response = await fetch('https://dev-r42s3taej0vvgom1.eu.auth0.com/api/v2/users', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Error fetching users:", error);
+        return;
+      }
+
+      const users = await response.json();
+      console.log("Users:", users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };*/
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/users");
+      if (response.ok) {
+        const users = await response.json();
+        console.log(users);
+      } else {
+        console.error("Error fetching users");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };  
+
+  
 
   return (
     <Router>
@@ -39,6 +90,7 @@ function App() {
                   <div className="profile">
                     <Profile />
                   </div>
+                  <button onClick={fetchUsers}>Fetch Users</button>
                 </div>
               )}
             </div>
