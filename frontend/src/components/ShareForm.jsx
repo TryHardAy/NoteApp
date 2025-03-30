@@ -31,7 +31,7 @@ const TagForm = ({ noteId, onSave, userId }) => {
         try {
           const effectiveUserId = userId ? userId : 0;
           const response = await fetch(
-            `http://localhost:5000/Users/some/${effectiveUserId}?part=${encodeURIComponent(searchTerm)}`
+            `http://localhost:5000/Users/some/${effectiveUserId}?prefix=${encodeURIComponent(searchTerm)}`
           );
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
