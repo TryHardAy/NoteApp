@@ -6,3 +6,4 @@ cryptography
 python-multipart
 requests
 mysql-connector
+dotenv

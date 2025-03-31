@@ -336,11 +336,13 @@ async def get_some_notes(prefix: str, user_id: int):
 
 
 # Loading users from Auth0 
+load_dotenv()
 
-load_dotenv() 
-AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
-CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
-CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET")
+# Sprawdzenie wartości zmiennych
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN", "Brak wartości")
+CLIENT_ID = os.getenv("AUTH0_CLIENT_ID", "Brak wartości")
+CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET", "Brak wartości")
+
 AUDIENCE = f"https://{AUTH0_DOMAIN}/api/v2/"
 API_URL = f"https://{AUTH0_DOMAIN}/api/v2/users"
 
