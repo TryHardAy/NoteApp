@@ -448,6 +448,7 @@ async def get_users():
             raise HTTPException(status_code=response.status_code, detail="Failed to fetch users")
         
         users = response.json()
+        print(users)
         return users
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
