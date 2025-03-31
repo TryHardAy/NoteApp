@@ -11,6 +11,8 @@ from typing import Annotated
 import requests
 import mysql.connector
 from fastapi import HTTPException
+from dotenv import load_dotenv
+import os
 
 
 config = {
@@ -332,90 +334,16 @@ async def get_some_notes(prefix: str, user_id: int):
     prefix = prefix.lower()
     return [NoteTitle(id=note[0], title=note[1]) for note in notes if note[1].lower().startswith(prefix)]
 
-"""@app.post("/migrate-users")
-def migrate_users_endpoint():
-    try:
-        migrate_users()  # Wywołanie funkcji migracji użytkowników
-        return {"detail": "Users migrated successfully."}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
-# Funkcja do nawiązywania połączenia z bazą danych MySQL
-def get_db_connection():
-    return mysql.connector.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=database
-    )
+# Loading users from Auth0 
 
-# Funkcja do dodawania użytkownika do bazy danych
-def add_user_to_db(name, last_name, email):
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    try:
-        # Dodaj dane hasła (domyślne lub puste hasło)
-        cursor.execute("INSERT INTO Passwords (password) VALUES ('default_password')")
-        password_id = cursor.lastrowid  # Pobierz ID ostatnio dodanego hasła
-        
-        # Dodaj użytkownika
-        cursor.execute("INSERT INTO Users (name, last_name, email, password_id) VALUES (%s, %s, %s, %s)", 
-                       (name, last_name, email, password_id))
-        connection.commit()
-    except Exception as e:
-        connection.rollback()  # W przypadku błędu, wykonaj rollback
-        print(f"Error adding user to DB: {e}")
-    finally:
-        cursor.close()
-        connection.close()
-
-# Funkcja do pobierania użytkowników z Auth0
-def get_users_from_auth0(authorization: str):
-    url = "https://dev-r42s3taej0vvgom1.eu.auth0.com/api/v2/users"
-    headers = {
-        "Authorization": f"Bearer {authorization}",  # Token dostępu z frontend
-        "Content-Type": "application/json"
-    }
-
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()  # Lista użytkowników
-    else:
-        raise HTTPException(status_code=response.status_code, detail="Error fetching users from Auth0")
-
-# Endpoint do migracji użytkowników
-@app.get("/migrate-users")
-async def migrate_users(authorization: str):
-    try:
-        # Pobierz użytkowników z Auth0
-        users = get_users_from_auth0(authorization)
-
-        # Migracja użytkowników do bazy danych
-        for user in users:
-            name = user.get('given_name')
-            last_name = user.get('family_name')
-            email = user.get('email')
-
-            if name and last_name and email:
-                add_user_to_db(name, last_name, email)
-        
-        return {"message": "Users migrated successfully"}
-    
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error during migration: {str(e)}")"""
-
-# Auth0 M2M Client credentials and domain
-AUTH0_DOMAIN = "dev-r42s3taej0vvgom1.eu.auth0.com"  # e.g., "dev-r42s3taej0vvgom1.eu.auth0.com"
-CLIENT_ID = "a4l7Ndl9cz0KZirAFAzCsQ7ILIjxMBMb"
-CLIENT_SECRET = "BIPi4cPTy6xN77TAIxAp_UrzlBtovrKtNgiCwKVH12Pzcutz3T6x9f-gVWNxcdud"
+load_dotenv() 
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
+CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
+CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET")
 AUDIENCE = f"https://{AUTH0_DOMAIN}/api/v2/"
 API_URL = f"https://{AUTH0_DOMAIN}/api/v2/users"
+
 
 # Function to get the Auth0 Management API Access Token
 def get_management_api_token():
