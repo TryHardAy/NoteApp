@@ -17,7 +17,7 @@ const UserForm = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/newUser', {  // Upewnij się, że adres URL jest poprawny
+      const response = await fetch('http://localhost:5000/user/create', {  // Upewnij się, że adres URL jest poprawny
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

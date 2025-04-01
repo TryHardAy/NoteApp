@@ -11,7 +11,7 @@ const CategoryForm = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/newCategory', {  // Upewnij się, że adres URL jest poprawny
+      const response = await fetch('http://localhost:5000/category/create', {  // Upewnij się, że adres URL jest poprawny
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
