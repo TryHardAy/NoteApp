@@ -37,8 +37,31 @@ const NotesList = () => {
     }
   };
 
+  // Funkcja do dodania nowej notatki
+  const handleAddNote = async (newNote) => {
+    try {
+      const response = await fetch("http://localhost:5000/note/create/1", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newNote),
+      });
+
+      if (response.ok) {
+        const savedNote = await response.json();
+        setNotes((prevNotes) => [...prevNotes, savedNote]); // Dodaj nową notatkę do stanu
+      } else {
+        console.error("Błąd podczas zapisywania notatki");
+      }
+    } catch (error) {
+      console.error("Błąd:", error);
+    }
+  };
+
   return (
     <div className="notes-list">
+
       {notes.map((note) => (
         <div key={note.id} className="note-card">
           <p>{note.id}</p>
@@ -58,9 +81,7 @@ const NotesList = () => {
 
             {menuOpen === note.id && (
               <div className="dropdown-menu">
-                <button onClick={() => navigate(`/editor/${note.id}`)}>
-                  ✏️ Edytuj
-                </button>
+                <button onClick={() => navigate(`/editor/${note.id}`)}>✏️ Edytuj</button>
                 <button onClick={() => setPopupNoteId(note.id)}>🔗 Udostępnij</button>
                 <button onClick={() => handleDelete(note.id)}>🗑️ Usuń</button>
               </div>

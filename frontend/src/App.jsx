@@ -1,8 +1,8 @@
-import React from "react";
+import { React, useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import LoginButton from "./components/LoginButton";
 import LogoutButton from "./components/LogoutButton";
-import Profile from "./components/Profile"; // Import the Profile component
+import Profile from "./components/Profile"; 
 import './App.css';
 import Menu from "./components/Menu";
 import SearchInput from "./components/SearchInput";
@@ -12,51 +12,93 @@ import UserMenu from "./components/UserMenu";
 import Form from "./components/CategoryForm";
 import UserForm from "./components/UserForm";
 import NotesList from "./components/NotesList";
-//import NotesList from "./components/NotesList";
 import TagForm from "./components/ShareForm";
+
+
 
 function App() {
   const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
-
+  const [isDragging, setIsDragging] = useState(false);
+  const [notes, setNotes] = useState([]); // Dodanie stanu notes
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  /*const fetchUsers = async () => {
-    if (!isAuthenticated) {
-      console.log("User is not authenticated.");
-      return;
-    }
-
+   // Funkcja do pobierania notatek
+   const fetchNotes = async () => {
     try {
-      const accessToken = await getAccessTokenSilently({
-        audience: `https://dev-r42s3taej0vvgom1.eu.auth0.com/api/v2/`, // Sprawdź swój audience
-        scope: 'read:users', // Zakres dostępu
-      });
+      const response = await fetch("http://localhost:5000/notes/1");
+      if (response.ok) {
+        const notesData = await response.json();
+        setNotes(notesData); // Aktualizuj stan notatek
+      } else {
+        console.error("Błąd pobierania notatek");
+      }
+    } catch (error) {
+      console.error("Błąd:", error);
+    }
+  };
 
-      console.log("Access Token: ", accessToken);
+  // Funkcja do dodania nowej notatki
+  const uploadNote = async ({ title, content }) => {
+    try {
+      const accessToken = await getAccessTokenSilently();
+      const userId = 1; // lub dynamicznie z Auth0
 
-      const response = await fetch('https://dev-r42s3taej0vvgom1.eu.auth0.com/api/v2/users', {
-        method: 'GET',
+      const response = await fetch(`http://localhost:5000/note/create/${userId}`, {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ title, content }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        console.error("Error fetching users:", error);
+        console.error("Błąd podczas zapisu notatki");
+      } else {
+        console.log("Notatka zapisana");
+        //fetchNotes();
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Błąd przy pobieraniu tokena lub zapisie notatki:", error);
+    }
+  };
+
+  const handleFileDrop = async (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+  
+    const isHtml = file.type === "text/html";
+    const isJson = file.type === "application/json";
+  
+    if (!isHtml && !isJson) {
+      alert("Obsługiwane są tylko pliki HTML lub JSON.");
+      return;
+    }
+  
+    const text = await file.text();
+    const title = file.name.replace(/\.[^/.]+$/, ""); // bez rozszerzenia
+  
+    let content;
+    if (isHtml) {
+      content = text;
+    } else {
+      try {
+        content = JSON.parse(text);
+      } catch (err) {
+        alert("Błąd przy parsowaniu pliku JSON");
         return;
       }
-
-      const users = await response.json();
-      console.log("Users:", users);
-    } catch (error) {
-      console.error('Error fetching users:', error);
     }
-  };*/
-
+  
+    await uploadNote({ title, content });
+  };
+  
   const fetchUsers = async () => {
     try {
       const response = await fetch("http://localhost:5000/users");
@@ -73,20 +115,31 @@ function App() {
 
   
 
+  
+
   return (
     <Router>
       <Routes>
-        <Route
+      <Route
           path="/"
           element={
             <div>
               {!isAuthenticated ? (
                 <LoginButton />
               ) : (
-                <div className="large-white-box">
+                <div
+                  className="large-white-box"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleFileDrop}
+                >
+                  {isDragging && <div className="drop-overlay show">Upuść plik tutaj</div>}
                   <Menu />
                   <SearchInput />
-                  <NotesList />
+                  <NotesList notes={notes} fetchNotes={fetchNotes} /> {/* Przekazanie notes i fetchNotes do NotesList */}
                   <div className="profile">
                     <Profile />
                   </div>
