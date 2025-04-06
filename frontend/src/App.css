@@ -133,7 +133,7 @@ body
   border-radius: 12px;              /* Zaokrąglone rogi */
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);  
   z-index: 999;                     /* Pod menu, ale nad innymi elementami */
-  margin: 0 auto;                   
+  margin: 0 auto ;                   
   max-width: 500px;                
   width: 100%;                     
 }
@@ -153,7 +153,7 @@ body
   background-color: #c4e5ed;        /* Tło pastelowe niebieskie */
   border-radius: 12px;              /* Zaokrąglone rogi */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Delikatny cień pod menu */
-  z-index: 1000;                    /* Menu nad innymi elementami */
+  z-index: 100;                    /* Menu nad innymi elementami */
   margin-top: 5px;                 /* Odstęp od góry */
   max-width: 1200px;                /* Maksymalna szerokość menu */
   width: 100%;                      /* Pełna szerokość */
@@ -196,6 +196,7 @@ body
   border-radius: 20px;                 /* Zaokrąglone rogi */
   margin-top: 100px;                      /* Wyśrodkowanie na ekranie */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Delikatny cień wokół */
+  padding-top: 20px;
   position: relative;
 }
 
@@ -236,7 +237,7 @@ body
   padding: 20px;
   border-radius: 8px;
   width: 300px;
-  margin: 0 auto;
+  margin: 20px auto;
 }
 
 /* Style dla kontenera z inputami */

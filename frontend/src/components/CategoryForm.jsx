@@ -22,7 +22,8 @@ const CategoryForm = () => {
       if (response.ok) {
         const result = await response.json();
         console.log(result);
-        alert("Kategoria została zapisana!");
+        // Po poprawnym zapisie nie pokazujemy alertu, tylko resetujemy formularz
+        setInputValue('');
       } else {
         console.error("Błąd przy zapisie kategorii");
         alert("Błąd przy zapisie kategorii");
@@ -45,7 +46,6 @@ const CategoryForm = () => {
             onChange={(e) => setInputValue(e.target.value)}
           />
         </div>
-
         <button type="submit" className="submit-button">Zapisz</button>
       </form>
     </div>

@@ -79,12 +79,12 @@ const TagForm = ({ noteId, onSave, userId }) => {
   // Obsługa wysłania formularza
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!selectedCategory && !selectedUser) {
       alert("Proszę wybrać przynajmniej kategorię lub użytkownika");
       return;
     }
-  
+
     // Budowanie form data warunkowo – dodajemy klucze tylko, gdy mają wartość
     const formData = new URLSearchParams();
     formData.append("note_id", noteId);
@@ -96,29 +96,30 @@ const TagForm = ({ noteId, onSave, userId }) => {
       formData.append("user_id", selectedUser.id);
       formData.append("user_permission", userPermission);
     }
-  
+
     try {
       const response = await fetch("http://localhost:5000/note/category/add", {
         method: "PUT",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
       });
-  
+
       const result = await response.json();
       console.log("Odpowiedź serwera:", result);
-      alert("Dane przypisane do notatki!");
+      // Zmiana: Usunięto alert przy sukcesie oraz dodano wywołanie onSave() w celu zamknięcia popupu.
+      onSave(); 
     } catch (error) {
       console.error("Błąd podczas zapisywania:", error);
+      alert("Błąd podczas zapisywania danych!");
     }
-  
+
     // Resetowanie formularza
-    setSelectedCategory(0);
+    setSelectedCategory("");
     setCategoryPermission(1);
     setSearchTerm("");
-    setSelectedUser(0);
+    setSelectedUser(null);
     setUserPermission(1);
   };
-  
 
   return (
     <div className="tag-form">

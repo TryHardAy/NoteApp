@@ -13,11 +13,16 @@ import Form from "./components/CategoryForm";
 import UserForm from "./components/UserForm";
 import NotesList from "./components/NotesList";
 import TagForm from "./components/ShareForm";
-
-
+//import { useState } from "react";
 
 function App() {
   const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearchChange = (term) => {
+    setSearchTerm(term);
+  };
+
   const [isDragging, setIsDragging] = useState(false);
   const [notes, setNotes] = useState([]); // Dodanie stanu notes
   if (isLoading) {
@@ -138,8 +143,8 @@ function App() {
                 >
                   {isDragging && <div className="drop-overlay show">Upuść plik tutaj</div>}
                   <Menu />
-                  <SearchInput />
-                  <NotesList notes={notes} fetchNotes={fetchNotes} /> {/* Przekazanie notes i fetchNotes do NotesList */}
+                  <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+                  <NotesList searchTerm={searchTerm} notes={notes} fetchNotes={fetchNotes} /> {/* Przekazanie notes i fetchNotes do NotesList */}
                   <div className="profile">
                     <Profile />
                   </div>
@@ -159,7 +164,6 @@ function App() {
                 <div className="large-white-box">
                   <Menu />
                   <Editor />
-                  
                   <div className="profile">
                     <Profile />
                   </div>
@@ -187,28 +191,6 @@ function App() {
             </div>
           }
         />
-<Route
-  path="/share/:id"
-  element={
-    <div>
-      {!isAuthenticated ? (
-        <LoginButton />
-      ) : (
-        <div className="tag-form">
-          <TagForm />
-          <div className="large-white-box">
-            <Menu />
-            <SearchInput />
-            <NotesList />
-            <div className="profile">
-              <Profile />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  }
-/>
 
         {/*<Route path="/users" element={<Users />} />*/}
         <Route
