@@ -37,27 +37,25 @@ const NotesList = () => {
     }
   };
 
-  // Funkcja do dodania nowej notatki
-  const handleAddNote = async (newNote) => {
+  const handleDownload = async (id) => {
     try {
-      const response = await fetch("http://localhost:5000/note/create/1", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newNote),
-      });
-
-      if (response.ok) {
-        const savedNote = await response.json();
-        setNotes((prevNotes) => [...prevNotes, savedNote]); // Dodaj nową notatkę do stanu
-      } else {
-        console.error("Błąd podczas zapisywania notatki");
-      }
+      const response = await fetch(`http://localhost:5000/note/${id}`);
+      const note = await response.json();
+  
+      const blob = new Blob([note.content], { type: "text/html" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${note.title || "notatka"}.html`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Błąd:", error);
+      console.error("Błąd podczas pobierania notatki:", error);
     }
   };
+  
+  
+  
 
   return (
     <div className="notes-list">
@@ -83,6 +81,7 @@ const NotesList = () => {
               <div className="dropdown-menu">
                 <button onClick={() => navigate(`/editor/${note.id}`)}>✏️ Edytuj</button>
                 <button onClick={() => setPopupNoteId(note.id)}>🔗 Udostępnij</button>
+                <button onClick={() => handleDownload(note.id)}>📄 Pobierz</button>
                 <button onClick={() => handleDelete(note.id)}>🗑️ Usuń</button>
               </div>
             )}
