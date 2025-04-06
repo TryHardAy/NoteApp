@@ -1,19 +1,17 @@
-import React, { useState } from 'react';
-import App from '../App';
+import React from 'react';
 
-const SearchInput = () => {
-  const [inputValue, setInputValue] = useState('');
+const SearchInput = ({ searchTerm, setSearchTerm }) => {
   const handleChange = (e) => {
-    setInputValue(e.target.value);
+    setSearchTerm(e.target.value);
   };
 
   return (
     <div className="search-container">
       <input
         type="text"
-        value={inputValue}
-        onChange={handleChange}
-        placeholder="Szukaj"
+        value={searchTerm}             // Wartość pochodzi z props
+        onChange={handleChange}        // Aktualizacja odbywa się poprzez funkcję z props
+        placeholder="Wyszukaj..."
         className="search-input"
       />
     </div>

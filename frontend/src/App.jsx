@@ -14,9 +14,15 @@ import UserForm from "./components/UserForm";
 import NotesList from "./components/NotesList";
 //import NotesList from "./components/NotesList";
 import TagForm from "./components/ShareForm";
+import { useState } from "react";
 
 function App() {
   const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearchChange = (term) => {
+    setSearchTerm(term);
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -85,8 +91,8 @@ function App() {
               ) : (
                 <div className="large-white-box">
                   <Menu />
-                  <SearchInput />
-                  <NotesList />
+                  <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+                  <NotesList searchTerm={searchTerm} />
                   <div className="profile">
                     <Profile />
                   </div>
@@ -106,7 +112,6 @@ function App() {
                 <div className="large-white-box">
                   <Menu />
                   <Editor />
-                  
                   <div className="profile">
                     <Profile />
                   </div>
@@ -134,28 +139,6 @@ function App() {
             </div>
           }
         />
-<Route
-  path="/share/:id"
-  element={
-    <div>
-      {!isAuthenticated ? (
-        <LoginButton />
-      ) : (
-        <div className="tag-form">
-          <TagForm />
-          <div className="large-white-box">
-            <Menu />
-            <SearchInput />
-            <NotesList />
-            <div className="profile">
-              <Profile />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  }
-/>
 
         {/*<Route path="/users" element={<Users />} />*/}
         <Route

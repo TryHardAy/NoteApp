@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
 import TagForm from "./ShareForm";
 
-const NotesList = () => {
+const NotesList = ({ searchTerm }) => { // searchTerm przekazywany jako prop
   const [notes, setNotes] = useState([]);
   const [menuOpen, setMenuOpen] = useState(null);
   const [popupNoteId, setPopupNoteId] = useState(null); // Przechowuje ID notatki do popupu
@@ -37,9 +37,14 @@ const NotesList = () => {
     }
   };
 
+  // Filtrowanie notatek na podstawie searchTerm
+  const filteredNotes = notes.filter((note) =>
+    note.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="notes-list">
-      {notes.map((note) => (
+      {filteredNotes.map((note) => (
         <div key={note.id} className="note-card">
           <p>{note.id}</p>
           <h3
@@ -74,7 +79,9 @@ const NotesList = () => {
         <div className="popup-overlay">
           <div className="popup">
             <TagForm noteId={popupNoteId} onSave={() => setPopupNoteId(null)} />
-            <button className="close-btn" onClick={() => setPopupNoteId(null)}> Zamknij</button>
+            <button className="close-btn" onClick={() => setPopupNoteId(null)}>
+              Zamknij
+            </button>
           </div>
         </div>
       )}
