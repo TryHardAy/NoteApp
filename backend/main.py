@@ -5,8 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated, Callable, Any
 import database_queries as dq
 import requests
-from fastapi import HTTPException
+from fastapi import HTTPException, Header
 from dotenv import load_dotenv
+from jose import jwt
 import os
 from models import (
     User,
@@ -70,6 +71,19 @@ async def create_note(note: Note, user_id: str):
 # ==============================
 
 #region GET FUNCTIONS
+
+@app.get("/user/login/{token}")
+async def login_user(token: str) -> User:
+    decoded = jwt.get_unverified_claims(token)
+    user = User(
+        id=decoded["sub"],
+        name=decoded["given_name"],
+        last_name=decoded["family_name"],
+        email=decoded["email"]
+    )
+    print(user)
+    return user
+
 
 @app.get("/notes/{user_id}")
 async def get_user_notes(user_id: str) -> list[NoteTitle]:
