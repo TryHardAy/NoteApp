@@ -160,6 +160,12 @@ async def delete_note(note_id: int):
     query_db(dq.delete_note, note_id)
     return {"message": f"Notatka {note_id} została usunięta"}
 
+
+@app.delete("/category/{category_id}")
+async def delete_category(category_id: int):
+    query_db(dq.delete_category, category_id)
+    return {"message": f"Kategoria {category_id} została usunięta"}
+
 #endregion
 
 # ==============================

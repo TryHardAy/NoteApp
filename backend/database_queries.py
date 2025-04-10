@@ -135,6 +135,16 @@ VALUES (%s);
     # Zapisywanie kategorii
     cursor.execute(query, (category.name))
 
+def delete_category(cursor: Cursor, category_id: int):
+    cursor.execute(
+        "DELETE FROM UserCategories WHERE category_id = %s;", 
+        (category_id))
+    cursor.execute(
+        "DELETE FROM CategoryNotes WHERE category_id = %s;", 
+        (category_id))
+    cursor.execute(
+        "DELETE FROM Categories WHERE id = %s;", 
+        (category_id))
 
 def get_categories(cursor: Cursor) -> list[tuple[int, str]]:
     cursor.execute("SELECT * FROM Categories")
