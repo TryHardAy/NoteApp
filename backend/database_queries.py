@@ -119,6 +119,18 @@ WHERE CategoryNotes.permission > 0;
     
     return list(dict.fromkeys(notes1 + notes2))
 
+
+def get_notes_by_categories(cursor: Cursor, categorie_id: int) -> list[tuple[int, str]]:
+    query = """
+SELECT id, title FROM Notes
+INNER JOIN CategoryNotes ON Notes.id = CategoryNotes.note_id
+WHERE CategoryNotes.category_id = %s
+"""
+    
+    cursor.execute(query, (categorie_id))
+
+    return list(cursor.fetchall())
+
 #endregion
 
 # ==============================
@@ -135,6 +147,11 @@ VALUES (%s);
     # Zapisywanie kategorii
     cursor.execute(query, (category.name))
 
+def update_category(cursor: Cursor, category: Category):
+    cursor.execute(
+        "UPDATE Categories SET name = %s WHERE id = %s;", 
+        (category.name, category.id))
+
 def delete_category(cursor: Cursor, category_id: int):
     cursor.execute(
         "DELETE FROM UserCategories WHERE category_id = %s;", 
@@ -149,6 +166,18 @@ def delete_category(cursor: Cursor, category_id: int):
 def get_categories(cursor: Cursor) -> list[tuple[int, str]]:
     cursor.execute("SELECT * FROM Categories")
     return list(cursor.fetchall())
+
+def get_some_categories(cursor: Cursor, prefix: str, user_id: int) -> list[tuple[int, str]]:
+        query = f"""
+    SELECT id, name
+    FROM Categories 
+    INNER JOIN UserCategories ON Categories.id = UserCategories.category_id
+    WHERE name LIKE '%{prefix}%'
+    AND UserCategories.user_id = {user_id};
+    """
+        cursor.execute(query)
+
+        return list(cursor.fetchall())
 
 #endregion
 

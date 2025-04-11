@@ -85,6 +85,12 @@ async def get_note(note_id: int) -> dict[str, str]:
     return {"error": "Notatka nie istnieje"}
 
 
+@app.get("/notes/categories/{categorie_id}")
+async def get_notes_by_categories(categorie_id: int) -> list[NoteTitle]:
+    notes: list[tuple[int, str]] = query_db(dq.get_notes_by_categories, categorie_id)
+    return [NoteTitle(id=note[0], title=note[1]) for note in notes]
+
+
 @app.get("/categories")
 async def get_categories() -> list[Category]:
     categories: list[tuple[int, str]] = query_db(dq.get_categories)
@@ -109,6 +115,14 @@ async def get_some_notes(prefix: str, user_id: str) -> list[NoteTitle]:
             for note in notes 
             if note[1].lower().startswith(prefix)]
 
+
+@app.get("/category/{category_id}")
+async def get_some_categories(prefix: str, user_id: int) -> list[Category]:
+    categories: list[tuple[int, str]] = query_db(
+        dq.get_some_categories, prefix, user_id
+        )
+    return [Category(id=category[0], name=category[1]) 
+            for category in categories]
 
 @app.get("/user/{user_id}")
 async def does_user_exist(user_id: str) -> bool:
@@ -137,6 +151,12 @@ async def update_note(note_id: int, note: dict):
 async def update_note(note_id: int, note: Note):
     query_db(dq.update_note, note, note_id)
     return {"message": f"Notatka {note_id} została zaktualizowana"}
+
+
+@app.put("/category")
+async def update_category(category: Category):
+    query_db(dq.update_category, category)
+    return {"message": f"Kategoria {category.id} została zaktualizowana na {category.name}"}
 
 
 @app.put("/note/category/add")
