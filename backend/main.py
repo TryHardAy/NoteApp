@@ -116,10 +116,10 @@ async def get_some_notes(prefix: str, user_id: str) -> list[NoteTitle]:
             if note[1].lower().startswith(prefix)]
 
 
-@app.get("/category/{category_id}")
-async def get_some_categories(prefix: str, user_id: int) -> list[Category]:
+@app.get("/category/some/{category_id}")
+async def get_some_categories(prefix: str) -> list[Category]:
     categories: list[tuple[int, str]] = query_db(
-        dq.get_some_categories, prefix, user_id
+        dq.get_some_categories, prefix
         )
     return [Category(id=category[0], name=category[1]) 
             for category in categories]

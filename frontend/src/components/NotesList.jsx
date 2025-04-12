@@ -3,28 +3,50 @@ import { useNavigate } from "react-router-dom";
 import { MoreVertical } from "lucide-react";
 import TagForm from "./ShareForm";
 
-const NotesList = ({ searchTerm }) => { // searchTerm przekazywany jako prop
+const NotesList = ({ searchTerm }) => {
   const [notes, setNotes] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [menuOpen, setMenuOpen] = useState(null);
-  const [popupNoteId, setPopupNoteId] = useState(null); // Przechowuje ID notatki do popupu
+  const [popupNoteId, setPopupNoteId] = useState(null);
 
   const navigate = useNavigate();
 
+  // Pobieranie kategorii
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/categories");
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Błąd podczas pobierania kategorii:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Pobieranie notatek na podstawie wybranej kategorii
   useEffect(() => {
     const fetchNotes = async () => {
+      let url = "http://localhost:5000/notes/1"; // Domyślnie wszystkie notatki
+      if (selectedCategory !== null) {
+        url = `http://localhost:5000/notes/categories/${selectedCategory}`;
+      }
       try {
-        const response = await fetch("http://localhost:5000/notes/1"); // Zamienić potem "1" na user_id
+        const response = await fetch(url);
         const data = await response.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setNotes(data);
         }
       } catch (error) {
         console.error("Błąd podczas pobierania notatek:", error);
       }
     };
-
     fetchNotes();
-  }, []);
+  }, [selectedCategory]);
 
   const handleDelete = async (id) => {
     try {
@@ -41,7 +63,7 @@ const NotesList = ({ searchTerm }) => { // searchTerm przekazywany jako prop
     try {
       const response = await fetch(`http://localhost:5000/note/${id}`);
       const note = await response.json();
-  
+
       const blob = new Blob([note.content], { type: "text/html" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -53,14 +75,29 @@ const NotesList = ({ searchTerm }) => { // searchTerm przekazywany jako prop
       console.error("Błąd podczas pobierania notatki:", error);
     }
   };
-  
-  // Filtrowanie notatek na podstawie searchTerm
+
+  // Filtrowanie notatek
   const filteredNotes = notes.filter((note) =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="notes-list">
+      {/* Dropdown kategorii */}
+      <select
+        onChange={(e) =>
+          setSelectedCategory(e.target.value === "" ? null : Number(e.target.value))
+        }
+        value={selectedCategory ?? ""}
+      >
+        <option value="">Wybierz kategorię</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+      </select>
+
       {filteredNotes.map((note) => (
         <div key={note.id} className="note-card">
           <p>{note.id}</p>
@@ -90,7 +127,7 @@ const NotesList = ({ searchTerm }) => { // searchTerm przekazywany jako prop
         </div>
       ))}
 
-      {/* Popup dla przypisania kategorii */}
+      {/* Popup do przypisania tagów */}
       {popupNoteId && (
         <div className="popup-overlay">
           <div className="popup">

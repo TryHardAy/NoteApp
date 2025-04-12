@@ -8,7 +8,7 @@ const UserMenu = () => {
       <div className="usermenu">
         <UserInterfaceButton label="Nowy użytkownik" url="/NewUser" />
         <UserInterfaceButton label="Nowa Kategoria" url="/categories" />
-        <UserInterfaceButton label="Kategorie" url="/categories" />
+        <UserInterfaceButton label="Kategorie" url="/categoriesList" />
 
       </div>
     </div>

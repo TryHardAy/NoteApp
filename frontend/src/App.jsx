@@ -12,6 +12,7 @@ import UserMenu from "./components/UserMenu";
 import Form from "./components/CategoryForm";
 import UserForm from "./components/UserForm";
 import NotesList from "./components/NotesList";
+import CategoriesList from "./components/CategoryList";
 //import TagForm from "./components/ShareForm";
 //import { useState } from "react";
 
@@ -28,6 +29,8 @@ function App() {
 
   const [isDragging, setIsDragging] = useState(false);
   const [notes, setNotes] = useState([]); // Dodanie stanu notes
+  const [categories, setCategories] = useState([]);
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -74,6 +77,19 @@ function App() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/categories");
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data); // Zapisz kategorie do state
+      } else {
+        console.error("Błąd pobierania kategorii");
+      }
+    } catch (error) {
+      console.error("Błąd:", error);
+    }
+  };
   
   // wersja ręczna
   /*const handleFileDrop = async (e) => {
@@ -422,6 +438,26 @@ function App() {
                     <Menu />
                     <UserMenu/>
                     <Form/>
+                  <div className="profile">
+                    <Profile />
+                  </div>
+                </div>
+              )}
+            </div>
+          }
+        />
+        <Route
+          path="/categoriesList" 
+          element={
+            <div>
+              {!isAuthenticated ? (
+                <LoginButton />
+              ) : (
+                <div className="large-white-box">
+                    <Menu />
+                    <UserMenu/>
+                    <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
+                    <CategoriesList s  searchTerm={searchTerm} categories={categories} fetchCategories={fetchCategories}/>
                   <div className="profile">
                     <Profile />
                   </div>

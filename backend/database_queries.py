@@ -167,13 +167,11 @@ def get_categories(cursor: Cursor) -> list[tuple[int, str]]:
     cursor.execute("SELECT * FROM Categories")
     return list(cursor.fetchall())
 
-def get_some_categories(cursor: Cursor, prefix: str, user_id: int) -> list[tuple[int, str]]:
+def get_some_categories(cursor: Cursor, prefix: str) -> list[tuple[int, str]]:
         query = f"""
     SELECT id, name
     FROM Categories 
-    INNER JOIN UserCategories ON Categories.id = UserCategories.category_id
-    WHERE name LIKE '%{prefix}%'
-    AND UserCategories.user_id = {user_id};
+    WHERE name LIKE '%{prefix}%';
     """
         cursor.execute(query)
 
