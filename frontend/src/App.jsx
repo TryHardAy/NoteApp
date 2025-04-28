@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import { React, useState, useEffect, use } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import LoginButton from "./components/LoginButton";
 import LogoutButton from "./components/LogoutButton";
@@ -12,25 +12,68 @@ import UserMenu from "./components/UserMenu";
 import Form from "./components/CategoryForm";
 import UserForm from "./components/UserForm";
 import NotesList from "./components/NotesList";
+import Keycloak from "keycloak-js";
 //import TagForm from "./components/ShareForm";
 //import { useState } from "react";
 
 
-
-
 function App() {
-  const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
+  //const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
+  //const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [userId, setUserId] = useState(null);
+  const [keycloak, setKeycloak] = useState(null);
 
+  useEffect(() => {
+    const storedKC = localStorage.getItem("keycloak");
+    const val = JSON.parse(storedKC) ? storedKC : null;
+
+    if (val === null) {
+      setKeycloak(new Keycloak({
+        url: "http://localhost:8080",
+        realm: "NoteAppRealm",
+        clientId: "client",
+      }));
+    }
+    else setKeycloak(val);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("keycloak", JSON.stringify(keycloak));
+  }, [keycloak]);
+  
+  useEffect(() => {
+    //console.log("Keycloak instance:", keycloak.authenticated);
+    if (keycloak === null) return;
+    if (keycloak.authenticated) return;
+
+    keycloak.init({ onLoad: 'login-required' }).then(async authenticated => {
+      if (authenticated) {
+        console.log("Authenticated!", keycloak.token);
+        console.log("Authenticated = ", authenticated);
+        const response = await fetch(`http://localhost:5000/user/login/${keycloak.token}`, {
+          method: "GET",
+          headers: {  
+            "Content-Type": "application/json" 
+          },
+        });
+        console.log("Response from backend:", response.json());
+        setUserId(response.json().id); // Assuming the response contains the user ID
+      }
+    });
+  }, []);
+
+  
+  //keycloak.logout()
   const handleSearchChange = (term) => {
     setSearchTerm(term);
   };
-
+  console.log("Keycloak instance:", keycloak);
   const [isDragging, setIsDragging] = useState(false);
   const [notes, setNotes] = useState([]); // Dodanie stanu notes
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  //if (keycloak === null) {
+  // return <div>Loading...</div>;
+  //}
 
    // Funkcja do pobierania notatek
    const fetchNotes = async () => {
@@ -50,14 +93,12 @@ function App() {
   // Funkcja do dodania nowej notatki
   const uploadNote = async ({ title, content }) => {
     try {
-      const accessToken = await getAccessTokenSilently();
       const userId = 1; // lub dynamicznie z Auth0
 
       const response = await fetch(`http://localhost:5000/note/create/${userId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ title, content }),
       });
@@ -301,14 +342,15 @@ function App() {
 
   
 
-  return (
+  return (<>{keycloak === null ?(<div>Loading...</div>)
+  : (
     <Router>
       <Routes>
       <Route
           path="/"
           element={
             <div>
-              {!isAuthenticated ? (
+              {!keycloak.authenticated ? (
                 <LoginButton />
               ) : (
                 <div
@@ -337,7 +379,7 @@ function App() {
           path="/editor" 
           element={
             <div>
-              {!isAuthenticated ? (
+              {!keycloak.authenticated ? (
                 <LoginButton />
               ) : (
                 <div className="large-white-box">
@@ -355,7 +397,7 @@ function App() {
           path="/editor/:id" 
           element={
             <div>
-              {!isAuthenticated ? (
+              {!keycloak.authenticated ? (
                 <LoginButton />
               ) : (
                 <div className="large-white-box">
@@ -376,7 +418,7 @@ function App() {
           path="/users" 
           element={
             <div>
-              {!isAuthenticated ? (
+              {!keycloak.authenticated ? (
                 <LoginButton />
               ) : (
                 <div className="large-white-box">
@@ -396,7 +438,7 @@ function App() {
           path="/NewUser" 
           element={
             <div>
-              {!isAuthenticated ? (
+              {!keycloak.authenticated ? (
                 <LoginButton />
               ) : (
                 <div className="large-white-box">
@@ -415,7 +457,7 @@ function App() {
           path="/categories" 
           element={
             <div>
-              {!isAuthenticated ? (
+              {!keycloak.authenticated ? (
                 <LoginButton />
               ) : (
                 <div className="large-white-box">
@@ -432,6 +474,8 @@ function App() {
         />
       </Routes>
     </Router>
+  )}
+    </>
   );
 }
 
