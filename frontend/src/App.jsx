@@ -384,21 +384,12 @@ setUserInfo(mappedUser);
                   <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
                   <NotesList searchTerm={searchTerm} notes={notes} fetchNotes={fetchNotes} /> {/* Przekazanie notes i fetchNotes do NotesList */}
                   <div className="profile">
-                    {<Profile userData={userInfo} 
+                    {<Profile userData={userInfo} kc = { keycloak }
                     />
                   }
                   </div>
                   <button onClick={fetchUsers}>Fetch Users</button>
                 </div>
-                {userInfo && (
-  <div className="user-info">
-    <h3>Dane użytkownika:</h3>
-    <p>Imię: {userInfo.given_name}</p>
-    <p>Nazwisko: {userInfo.family_name}</p>
-    <p>Email: {userInfo.email}</p>
-    <p>Login: {userInfo.preferred_username}</p>
-  </div>
-)}
                 <div>
                   <LogoutButton kc = { keycloak }/>
                 </div>
@@ -413,7 +404,7 @@ setUserInfo(mappedUser);
                   <Menu />
                   <Editor />
                   <div className="profile">
-                    {<Profile userData={userInfo} 
+                    {<Profile userData={userInfo} kc = { keycloak }
                     />}
                   </div>
                 </div>
@@ -429,7 +420,7 @@ setUserInfo(mappedUser);
                   <Editor />
                   
                   <div className="profile">
-                    {<Profile userData={userInfo} 
+                    {<Profile userData={userInfo} kc = { keycloak }
                     />}
                   </div>
                 </div>
@@ -448,7 +439,7 @@ setUserInfo(mappedUser);
                   <SearchInput/>
                   
                   <div className="profile">
-                    {<Profile userData={userInfo} 
+                    {<Profile userData={userInfo} kc = { keycloak }
                     />}
                   </div>
                 </div>
@@ -464,7 +455,7 @@ setUserInfo(mappedUser);
                     <UserMenu/>
                     <UserForm/>
                   <div className="profile">
-                    {<Profile userData={userInfo} 
+                    {<Profile userData={userInfo} kc = { keycloak }
                     />}
                   </div>
                 </div>
@@ -480,7 +471,7 @@ setUserInfo(mappedUser);
                     <UserMenu/>
                     <Form/>
                   <div className="profile">
-                    {<Profile userData={userInfo} 
+                    {<Profile userData={userInfo} kc = { keycloak }
                     />}
                   </div>
                 </div>
