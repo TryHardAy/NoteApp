@@ -29,13 +29,26 @@ def get_some_users(cursor: Cursor, prefix: str, user_id: str) -> list[tuple[str,
 
 
 def create_user(cursor: Cursor, user: User):
-    query = """
+    query1 = """
+SELECT * FROM Users WHERE id = %s;
+"""
+    # Sprawdzanie czy uzytkownik istnieje
+    cursor.execute(query1, (user.id))
+    rows = cursor.fetchall()
+    if len(rows) == 1:
+        return False  # Uzytkownik juz istnieje
+
+    # Dodawanie uzytkownika do bazy danych
+    print("Dodawanie uzytkownika do bazy danych")
+
+
+    query2 = """
 INSERT INTO Users (id, name, last_name, email)
 VALUES (%s, %s, %s, %s);
 """
     # Zapisywanie uzytkownika
     values = (user.id, user.name, user.last_name, user.email)
-    cursor.execute(query, values)
+    cursor.execute(query2, values)
 
 
 def does_user_exist(cursor: Cursor, user_id: str) -> bool:

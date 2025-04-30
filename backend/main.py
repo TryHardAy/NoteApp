@@ -81,6 +81,7 @@ async def login_user(token: str) -> User:
         last_name=decoded["family_name"],
         email=decoded["email"]
     )
+    query_db(dq.create_user, user)
     print(user)
     return user
 
