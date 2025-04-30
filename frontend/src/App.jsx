@@ -1,8 +1,8 @@
 import { React, useState, useEffect, use } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
-import LoginButton from "./components/LoginButton";
+//import { useAuth0 } from "@auth0/auth0-react";
+//import LoginButton from "./components/LoginButton";
 import LogoutButton from "./components/LogoutButton";
-import Profile from "./components/Profile"; 
+//import Profile from "./components/Profile"; 
 import './App.css';
 import Menu from "./components/Menu";
 import SearchInput from "./components/SearchInput";
@@ -40,10 +40,7 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem("keycloak", JSON.stringify(keycloak));
-  }, [keycloak]);
-  
-  useEffect(() => {
-    //console.log("Keycloak instance:", keycloak.authenticated);
+
     if (keycloak === null) return;
     if (keycloak.authenticated) return;
 
@@ -57,11 +54,16 @@ function App() {
             "Content-Type": "application/json" 
           },
         });
-        console.log("Response from backend:", response.json());
+        //console.log("Response from backend:", response.json());
         setUserId(response.json().id); // Assuming the response contains the user ID
       }
     });
-  }, []);
+  }, [keycloak]);
+  
+ /* useEffect(() => {
+    //console.log("Keycloak instance:", keycloak.authenticated);
+
+  }, []);*/
 
   
   //keycloak.logout()
@@ -350,9 +352,6 @@ function App() {
           path="/"
           element={
             <div>
-              {!keycloak.authenticated ? (
-                <LoginButton />
-              ) : (
                 <div
                   className="large-white-box"
                   onDragOver={(e) => {
@@ -367,11 +366,13 @@ function App() {
                   <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
                   <NotesList searchTerm={searchTerm} notes={notes} fetchNotes={fetchNotes} /> {/* Przekazanie notes i fetchNotes do NotesList */}
                   <div className="profile">
-                    <Profile />
+                    {/*<Profile />*/}
                   </div>
                   <button onClick={fetchUsers}>Fetch Users</button>
                 </div>
-              )}
+                <div>
+                  <LogoutButton kc = { keycloak }/>
+                </div>
             </div>
           }
         />
@@ -379,17 +380,13 @@ function App() {
           path="/editor" 
           element={
             <div>
-              {!keycloak.authenticated ? (
-                <LoginButton />
-              ) : (
                 <div className="large-white-box">
                   <Menu />
                   <Editor />
                   <div className="profile">
-                    <Profile />
+                    {/*<Profile />*/}
                   </div>
                 </div>
-              )}
             </div>
           }
         />
@@ -397,18 +394,14 @@ function App() {
           path="/editor/:id" 
           element={
             <div>
-              {!keycloak.authenticated ? (
-                <LoginButton />
-              ) : (
                 <div className="large-white-box">
                   <Menu />
                   <Editor />
                   
                   <div className="profile">
-                    <Profile />
+                    {/*<Profile />*/}
                   </div>
                 </div>
-              )}
             </div>
           }
         />
@@ -418,19 +411,15 @@ function App() {
           path="/users" 
           element={
             <div>
-              {!keycloak.authenticated ? (
-                <LoginButton />
-              ) : (
                 <div className="large-white-box">
                   <Menu />
                   <UserMenu/>
                   <SearchInput/>
                   
                   <div className="profile">
-                    <Profile />
+                    {/*<Profile />*/}
                   </div>
                 </div>
-              )}
             </div>
           }
         />
@@ -438,18 +427,14 @@ function App() {
           path="/NewUser" 
           element={
             <div>
-              {!keycloak.authenticated ? (
-                <LoginButton />
-              ) : (
                 <div className="large-white-box">
                     <Menu />
                     <UserMenu/>
                     <UserForm/>
                   <div className="profile">
-                    <Profile />
+                    {/*<Profile />*/}
                   </div>
                 </div>
-              )}
             </div>
           }
         />
@@ -457,18 +442,14 @@ function App() {
           path="/categories" 
           element={
             <div>
-              {!keycloak.authenticated ? (
-                <LoginButton />
-              ) : (
                 <div className="large-white-box">
                     <Menu />
                     <UserMenu/>
                     <Form/>
                   <div className="profile">
-                    <Profile />
+                    {/*<Profile />*/}
                   </div>
                 </div>
-              )}
             </div>
           }
         />
