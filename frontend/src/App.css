@@ -463,4 +463,51 @@ body
 .drop-overlay.show {
   display: flex; /* Pokaż overlay tylko gdy jest aktywne */
 }
+.drop-overlay.show {
+  display: flex; /* Pokaż overlay tylko gdy jest aktywne */
+}
 
+.profile-info {
+  font-family: Arial, sans-serif;
+  color: black;
+  margin: 10px;
+  display: flex; /* Użyj flexbox do wyśrodkowania */
+  flex-direction: column; /* Elementy będą układać się jeden pod drugim */
+  align-items: center; /* Wyśrodkowanie w poziomie */
+  justify-content: center; /* Wyśrodkowanie w pionie */
+  text-align: center; /* Wyśrodkowanie tekstu */
+}
+
+.profile-info p {
+  margin: 5px 0;
+}
+
+.profile-info .name {
+  display: flex;
+  gap: 5px;
+  justify-content: center; /* Wyśrodkowanie imienia i nazwiska */
+}
+
+.profile-info .name p {
+  margin: 0;
+}
+
+.profile-info .contact-info {
+  font-size: 0.9em;
+  color: gray;
+}
+
+.logout-button {
+  background-color: lightblue;  /* Tło w kolorze lightblue */
+  color: black;  /* Kolor tekstu */
+  padding: 5px 10px;  /* Padding, aby przycisk był niewielki */
+  font-size: 14px;  /* Mniejsza czcionka */
+  border-radius: 5px;  /* Zaokrąglone rogi */
+  cursor: pointer;  /* Zmiana kursora na wskaźnik */
+  transition: background-color 0.3s ease, border-color 0.3s ease;  /* Płynne przejście na hover */
+}
+
+.logout-button:hover {
+  background-color: #9ddceb;         /* Trochę ciemniejszy odcień tła po najechaniu */
+  border-color: #8DB6D4;             /* Dopasowanie koloru obramowania do tła na hover */
+}/* Ciemniejszy odcień obramowania przy hover */

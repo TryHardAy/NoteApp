@@ -1,20 +1,21 @@
-import React from "react";
-import LogoutButton from "./LogoutButton";
+import React from 'react';
+import LogoutButton from './LogoutButton';
 
-/*const Profile = () => {
-  const { user, isAuthenticated, isLoading } = useAuth0();
-
-  if (isLoading) {
-    return <div>Loading ...</div>;
-  }
+const Profile = ({ userData }) => {
+  if (!userData) return <div>Loading...</div>; // Możesz dodać spinnera lub inny wskaźnik, gdy dane użytkownika są ładowane
 
   return (
-      <div>
-        <img src={user.picture} alt={user.name} />
-        <h2>{user.name}</h2>
-        <LogoutButton />
+    <div className="profile-info">
+      <div className="name">
+        <p>{userData.given_name}</p>
+        <p>{userData.family_name}</p>
       </div>
+      <div className="contact-info">
+        <p>{userData.email}</p>
+      </div>
+      <LogoutButton />
+    </div>
   );
 };
 
-export default Profile;*/
+export default Profile;

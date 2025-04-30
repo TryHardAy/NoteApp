@@ -15,7 +15,7 @@ import NotesList from "./components/NotesList";
 import Keycloak from "keycloak-js";
 //import TagForm from "./components/ShareForm";
 //import { useState } from "react";
-
+import Profile from "./components/Profile";
 
 function App() {
   //const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
@@ -23,6 +23,9 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [userId, setUserId] = useState(null);
   const [keycloak, setKeycloak] = useState(null);
+  const [userInfo, setUserInfo] = useState(null); // <-- nowy stan
+
+  
 
   useEffect(() => {
     const storedKC = localStorage.getItem("keycloak");
@@ -40,22 +43,37 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem("keycloak", JSON.stringify(keycloak));
-
+  
     if (keycloak === null) return;
     if (keycloak.authenticated) return;
-
+  
     keycloak.init({ onLoad: 'login-required' }).then(async authenticated => {
       if (authenticated) {
         console.log("Authenticated!", keycloak.token);
         console.log("Authenticated = ", authenticated);
+  
+        // 🔹 WYCIĄGANIE DANYCH Z TOKENA
+        const user = keycloak.tokenParsed;
+        const mappedUser = {
+        firstName: user.given_name,
+        lastName: user.family_name,
+        email: user.email,
+};
+setUserInfo(mappedUser);
+        console.log("Dane użytkownika z tokena:", user);
+        
+        setUserInfo(user); // <- zapisujemy do stanu
+        
+        // 🔹 LOGOWANIE PO STRONIE BACKENDU
         const response = await fetch(`http://localhost:5000/user/login/${keycloak.token}`, {
           method: "GET",
           headers: {  
             "Content-Type": "application/json" 
           },
         });
-        //console.log("Response from backend:", response.json());
-        setUserId(response.json().id); // Assuming the response contains the user ID
+  
+        const data = await response.json(); // <- poprawka: await json()
+        setUserId(data.id); // <- zakładamy, że backend zwraca { id: ... }
       }
     });
   }, [keycloak]);
@@ -366,10 +384,21 @@ function App() {
                   <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
                   <NotesList searchTerm={searchTerm} notes={notes} fetchNotes={fetchNotes} /> {/* Przekazanie notes i fetchNotes do NotesList */}
                   <div className="profile">
-                    {/*<Profile />*/}
+                    {<Profile userData={userInfo} 
+                    />
+                  }
                   </div>
                   <button onClick={fetchUsers}>Fetch Users</button>
                 </div>
+                {userInfo && (
+  <div className="user-info">
+    <h3>Dane użytkownika:</h3>
+    <p>Imię: {userInfo.given_name}</p>
+    <p>Nazwisko: {userInfo.family_name}</p>
+    <p>Email: {userInfo.email}</p>
+    <p>Login: {userInfo.preferred_username}</p>
+  </div>
+)}
                 <div>
                   <LogoutButton kc = { keycloak }/>
                 </div>
@@ -384,7 +413,8 @@ function App() {
                   <Menu />
                   <Editor />
                   <div className="profile">
-                    {/*<Profile />*/}
+                    {<Profile userData={userInfo} 
+                    />}
                   </div>
                 </div>
             </div>
@@ -399,7 +429,8 @@ function App() {
                   <Editor />
                   
                   <div className="profile">
-                    {/*<Profile />*/}
+                    {<Profile userData={userInfo} 
+                    />}
                   </div>
                 </div>
             </div>
@@ -417,7 +448,8 @@ function App() {
                   <SearchInput/>
                   
                   <div className="profile">
-                    {/*<Profile />*/}
+                    {<Profile userData={userInfo} 
+                    />}
                   </div>
                 </div>
             </div>
@@ -432,7 +464,8 @@ function App() {
                     <UserMenu/>
                     <UserForm/>
                   <div className="profile">
-                    {/*<Profile />*/}
+                    {<Profile userData={userInfo} 
+                    />}
                   </div>
                 </div>
             </div>
@@ -447,7 +480,8 @@ function App() {
                     <UserMenu/>
                     <Form/>
                   <div className="profile">
-                    {/*<Profile />*/}
+                    {<Profile userData={userInfo} 
+                    />}
                   </div>
                 </div>
             </div>
