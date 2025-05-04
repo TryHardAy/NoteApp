@@ -14,7 +14,8 @@ from models import (
     Note,
     NoteTitle,
     Category,
-    NewPermissionsForm
+    NewPermissionsForm,
+    KeycloakUserCreate
 )
 
 
@@ -29,7 +30,7 @@ config = {
 
 origins = [
     "http://localhost:5173",  # frontend
-    "http://localhost:5000" #backend
+    #"http://localhost:5000" #backend
 ]
 
 app.add_middleware(
@@ -64,6 +65,21 @@ async def create_note(note: Note, user_id: str):
     query_db(dq.create_note, note, user_id)
     return "Zapisano notatkę"
 
+#zmienione
+@app.post("/user/keycloak/create")
+async def create_user_from_keycloak(user: KeycloakUserCreate):
+    # Sprawdzamy, czy użytkownik już istnieje w bazie danych
+    existing_user = query_db(dq.check_existing_user, user.userId)
+
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Użytkownik już istnieje.")
+
+    # Zapisujemy użytkownika w bazie danych
+    user_id = query_db(dq.create_keycloak_user, user)
+
+    return {"id": user_id}
+
+
 #endregion
 
 # ==============================
@@ -86,10 +102,18 @@ async def login_user(token: str) -> User:
     return user
 
 
+# @app.get("/notes/{user_id}")
+# async def get_user_notes(user_id: str) -> list[NoteTitle]:
+#     notes: list[tuple[int, str]] = query_db(dq.get_user_notes, user_id)
+#     print("Notes fetched:", notes)
+#     return [NoteTitle(id=note[0], title=note[1]) for note in notes]
+
+#nowe
 @app.get("/notes/{user_id}")
 async def get_user_notes(user_id: str) -> list[NoteTitle]:
-    notes: list[tuple[int, str]] = query_db(dq.get_user_notes, user_id)
-    return [NoteTitle(id=note[0], title=note[1]) for note in notes]
+    notes: list[dict] = query_db(dq.get_user_notes, user_id)
+    return [NoteTitle(id=note["id"], title=note["title"]) for note in notes]
+
 
 
 @app.get("/note/{note_id}")

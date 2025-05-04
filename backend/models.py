@@ -29,3 +29,10 @@ class NewPermissionsForm(BaseModel):
     category_permission: int = 0
     user_id: str = "0"
     user_permission: int = 0
+
+#zmienione
+class KeycloakUserCreate(BaseModel):
+    userId: str  # ID z tokena Keycloak
+    firstName: str
+    lastName: str
+    email: str

@@ -8,3 +8,4 @@ requests
 mysql-connector
 dotenv
 python-jose
+pyjwt

@@ -51,6 +51,7 @@ function App() {
       if (authenticated) {
         console.log("Authenticated!", keycloak.token);
         console.log("Authenticated = ", authenticated);
+        localStorage.setItem("token", keycloak.token);
   
         // 🔹 WYCIĄGANIE DANYCH Z TOKENA
         const user = keycloak.tokenParsed;
@@ -134,97 +135,6 @@ setUserInfo(mappedUser);
       console.error("Błąd przy pobieraniu tokena lub zapisie notatki:", error);
     }
   };
-
-  
-  // wersja ręczna
-  /*const handleFileDrop = async (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-  
-    const isHtml = file.type === "text/html";
-  
-    if (!isHtml) {
-      alert("Plik musi być w formacie HTML");
-      return;
-    }
-  
-    const text = await file.text();
-    const title = file.name.replace(/\.[^/.]+$/, ""); // bez rozszerzenia
-  
-    let content;
-  
-    try {
-      // Simple regex check to see if there are any unclosed tags
-      const invalidTagRegex = /<([a-zA-Z0-9]+)(?=[^>]*?)(?!<\/\1>)[^>]*?>/g;
-      const invalidTags = text.match(invalidTagRegex);
-  
-      if (invalidTags) {
-        // If there are any unclosed or malformed tags, alert the user
-        alert("Błąd: Plik HTML ma uszkodzoną strukturę. Formatowanie może być nieprawidłowe.");
-        content = text; // You can still store the original HTML content
-      } else {
-        // Parse the HTML using DOMParser for further checking
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, "text/html");
-  
-        // Check if the document has a parsererror element, indicating parsing issues
-        if (doc.getElementsByTagName("parsererror").length > 0) {
-          alert("Błąd: Plik HTML ma uszkodzoną strukturę. Formatowanie może być nieprawidłowe.");
-          content = text; // If there's a parsererror, store the raw HTML
-        } else {
-          content = text; // HTML is considered valid, proceed with the content
-        }
-      }
-    } catch (err) {
-      alert("Błąd przy parsowaniu pliku HTML.");
-      return;
-    }
-  
-    await uploadNote({ title, content });
-  };*/
-
-  // wersja z biblioteką jeśki bład to nie zapisuje pliku
-  /*const validateHTMLWithW3C = async (htmlContent) => {
-    const response = await fetch("https://validator.w3.org/nu/?out=json", {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-      },
-      body: htmlContent,
-    });
-  
-    const result = await response.json();
-    if (result.messages.length > 0) {
-      alert("Błąd: Plik HTML ma uszkodzoną strukturę. Formatowanie może być nieprawidłowe.");
-      console.log(result.messages); // Validation errors
-    } else {
-      console.log("HTML is valid.");
-    }
-  };
-
-  const handleFileDrop = async (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-  
-    const isHtml = file.type === "text/html";
-  
-    if (!isHtml) {
-      alert("Plik musi być w formacie HTML");
-      return;
-    }
-  
-    const text = await file.text();
-    const title = file.name.replace(/\.[^/.]+$/, ""); // without the file extension
-  
-    // Validate HTML using W3C API
-    await validateHTMLWithW3C(text);
-  };*/
   
   // wersja z biblioteka pozwalajaca zapisac uszkodzony plik
   const validateHTMLWithW3C = async (htmlContent) => {
@@ -266,59 +176,6 @@ setUserInfo(mappedUser);
       return true; // Return true indicating that validation passed
     }
   };
-
-  /*// wersja do debugowania z wyswietlaniem logw walidatora (trzeba zablokowac przeladowanie okna przegladark)
-  const validateHTMLWithW3C = async (htmlContent) => {
-    const startsWithDoctype = htmlContent.trim().toLowerCase().startsWith("<!doctype html>");
-  
-    // If it doesn't start with <!DOCTYPE html>, wrap it in a full HTML structure
-    const fullHTML = startsWithDoctype
-      ? htmlContent
-      : `<!DOCTYPE html>
-          <html lang="pl">
-            <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>HTML Validation</title>
-            </head>
-            <body>
-              ${htmlContent}
-            </body>
-          </html>`;
-  
-    const response = await fetch("https://validator.w3.org/nu/?out=json", {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-      },
-      body: fullHTML, 
-    });
-  
-    const result = await response.json();
-  
-    console.log("W3C Validator Response:", result);
-  
-    // Check if the 'messages' array contains any errors
-    if (result.messages && result.messages.length > 0) {
-      console.log("Found validation errors:");
-  
-      // Loop through the errors and display them one by one
-      result.messages.forEach((message, index) => {
-        console.log(`Error ${index + 1}:`);
-        console.log(`Message: ${message.message}`);
-        console.log(`Type: ${message.type}`);
-        console.log(`Line: ${message.lastLine}`);
-        console.log(`Column: ${message.lastColumn}`);
-        console.log("---------------------------");
-      });
-  
-      return false;
-    } else {
-      console.log("HTML is valid.");
-      return true;
-    }
-  };*/
-  
   
   const handleFileDrop = async (e) => {
     e.preventDefault();
@@ -357,45 +214,46 @@ setUserInfo(mappedUser);
       console.error("Error:", error);
     }
   };  
-
-  
-
   
 
   return (<>{keycloak === null ?(<div>Loading...</div>)
   : (
     <Router>
       <Routes>
-      <Route
+        <Route
           path="/"
           element={
             <div>
-                <div
-                  className="large-white-box"
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={handleFileDrop}
-                >
-                  {isDragging && <div className="drop-overlay show">Upuść plik tutaj</div>}
-                  <Menu />
-                  <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-                  <NotesList searchTerm={searchTerm} notes={notes} fetchNotes={fetchNotes} /> {/* Przekazanie notes i fetchNotes do NotesList */}
-                  <div className="profile">
-                    {<Profile userData={userInfo} kc = { keycloak }
-                    />
-                  }
-                  </div>
-                  <button onClick={fetchUsers}>Fetch Users</button>
+              <div
+                className="large-white-box"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleFileDrop}
+              >
+                {isDragging && <div className="drop-overlay show">Upuść plik tutaj</div>}
+                <Menu />
+                <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+                
+                {/* Kontener z przewijającą się listą */}
+                <div className="notes-container">
+                  <NotesList
+                    searchTerm={searchTerm}
+                    notes={notes}
+                    fetchNotes={fetchNotes} // Przekazanie notes i fetchNotes do NotesList
+                  />
                 </div>
-                <div>
-                  <LogoutButton kc = { keycloak }/>
+
+                <div className="profile">
+                  <Profile userData={userInfo} kc={keycloak} />
                 </div>
+              </div>
             </div>
           }
         />
+
         <Route
           path="/editor" 
           element={
