@@ -7,31 +7,29 @@ import TagForm from "./ShareForm";
 const NotesList = ({ searchTerm }) => {
   const [notes, setNotes] = useState([]);
   const [menuOpen, setMenuOpen] = useState(null);
-  const [popupNoteId, setPopupNoteId] = useState(null); // Store the note ID for the popup
+  const [popupNoteId, setPopupNoteId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchNotes = async () => {
       const token = localStorage.getItem("token");
-      if (!token) return; // If there's no token, don't proceed
+      if (!token) return;
 
       try {
         const decodedToken = jwtDecode(token);
-        const userId = decodedToken.sub; // Get user ID from the decoded token
+        const userId = decodedToken.sub;
 
         if (!userId) {
           console.error("Brak userId w tokenie");
           return;
         }
 
-        // Fetch notes with categories for the user
         const response = await fetch(`http://localhost:5000/notes/${userId}`);
         const notesData = await response.json();
 
         const categoriesResponse = await fetch("http://localhost:5000/categories");
         const categoriesData = await categoriesResponse.json();
 
-        // Process notes and map them with their categories
         const notesWithCategories = notesData.map((note) => {
           const categories = categoriesData
             .filter((category) => category.note_id === note.id)
@@ -43,25 +41,50 @@ const NotesList = ({ searchTerm }) => {
           };
         });
 
-        setNotes(notesWithCategories); // Update the state with the notes and categories
+        setNotes(notesWithCategories);
       } catch (error) {
         console.error("Błąd podczas pobierania notatek:", error);
       }
     };
 
     fetchNotes();
-  }, []); // Runs only once, when the component is mounted
+  }, []);
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/note/${id}`, {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+  
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.sub;
+  
+      if (!userId) {
+        console.error("Brak userId w tokenie");
+        return;
+      }
+  
+      // Wysyłamy zapytanie do backendu o usunięcie
+      const response = await fetch(`http://localhost:5000/note/${id}?user_id=${userId}`, {
         method: "DELETE",
       });
-      setNotes(notes.filter((note) => note.id !== id));
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Usuwamy lokalnie po udanym usunięciu z backendu
+        setNotes(notes.filter((note) => note.id !== id));
+        //alert(data.message); // Można wyświetlić komunikat o sukcesie
+      } else {
+        console.error("Błąd podczas usuwania notatki:", data);
+      }
     } catch (error) {
       console.error("Błąd podczas usuwania notatki:", error);
     }
   };
+  
+  
+  
+  
 
   const handleDownload = async (id) => {
     try {
@@ -116,10 +139,14 @@ const NotesList = ({ searchTerm }) => {
 
             {menuOpen === note.id && (
               <div className="dropdown-menu">
-                <button onClick={() => navigate(`/editor/${note.id}`)}>✏️ Edytuj</button>
+                {note.permission > 1 && (
+                  <button onClick={() => navigate(`/editor/${note.id}`)}>✏️ Edytuj</button>
+                )}
                 <button onClick={() => setPopupNoteId(note.id)}>🔗 Udostępnij</button>
                 <button onClick={() => handleDownload(note.id)}>📄 Pobierz</button>
-                <button onClick={() => handleDelete(note.id)}>🗑️ Usuń</button>
+                {note.permission >= 1 && (
+                  <button onClick={() => handleDelete(note.id)}>🗑️ Usuń</button>
+                )}
               </div>
             )}
           </div>
@@ -142,3 +169,4 @@ const NotesList = ({ searchTerm }) => {
 };
 
 export default NotesList;
+

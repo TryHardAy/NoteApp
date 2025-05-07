@@ -12,10 +12,16 @@ class Note(BaseModel):
     title: str = "Abc"
     content: str
 
+# zmienione
+# class NoteTitle(BaseModel):
+#     id: int
+#     title: str
 
 class NoteTitle(BaseModel):
     id: int
     title: str
+    permission: int  # Nowe pole dla permission
+
 
 
 class Category(BaseModel):
@@ -30,9 +36,11 @@ class NewPermissionsForm(BaseModel):
     user_id: str = "0"
     user_permission: int = 0
 
-#zmienione
 class KeycloakUserCreate(BaseModel):
-    userId: str  # ID z tokena Keycloak
+    userId: str
     firstName: str
     lastName: str
     email: str
+
+class DeleteNoteRequest(BaseModel):
+    user_id: str

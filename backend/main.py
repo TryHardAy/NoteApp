@@ -15,7 +15,8 @@ from models import (
     NoteTitle,
     Category,
     NewPermissionsForm,
-    KeycloakUserCreate
+    KeycloakUserCreate,
+    DeleteNoteRequest
 )
 
 
@@ -101,18 +102,15 @@ async def login_user(token: str) -> User:
     print(user)
     return user
 
-
-# @app.get("/notes/{user_id}")
-# async def get_user_notes(user_id: str) -> list[NoteTitle]:
-#     notes: list[tuple[int, str]] = query_db(dq.get_user_notes, user_id)
-#     print("Notes fetched:", notes)
-#     return [NoteTitle(id=note[0], title=note[1]) for note in notes]
-
-#nowe
 @app.get("/notes/{user_id}")
 async def get_user_notes(user_id: str) -> list[NoteTitle]:
     notes: list[dict] = query_db(dq.get_user_notes, user_id)
-    return [NoteTitle(id=note["id"], title=note["title"]) for note in notes]
+    # Zwracamy zaktualizowaną odpowiedź, uwzględniając permission
+    return [
+        NoteTitle(id=note["id"], title=note["title"], permission=note["permission"])
+        for note in notes
+    ]
+
 
 
 
@@ -195,9 +193,13 @@ async def add_category_user_permission(data: Annotated[NewPermissionsForm, Form(
 #region DELETE FUNCTIONS
 
 @app.delete("/note/{note_id}")
-async def delete_note(note_id: int):
-    query_db(dq.delete_note, note_id)
-    return {"message": f"Notatka {note_id} została usunięta"}
+async def delete_note(note_id: int, user_id: str):
+    result = query_db(dq.delete_note, note_id, user_id)
+    return result
+
+
+
+
 
 #endregion
 
