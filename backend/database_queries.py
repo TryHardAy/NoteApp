@@ -119,6 +119,16 @@ def decode_token_and_save_user(cursor: Cursor, token: str) -> bool:
         print(f"Token błąd: {str(e)}")
         return False
 
+def get_notes_by_categories(cursor: Cursor, categorie_id: int) -> list[tuple[int, str]]:
+    query = """
+SELECT id, title FROM Notes
+INNER JOIN CategoryNotes ON Notes.id = CategoryNotes.note_id
+WHERE CategoryNotes.category_id = %s
+"""
+    
+    cursor.execute(query, (categorie_id))
+
+    return list(cursor.fetchall())
 
 #endregion
 

@@ -16,6 +16,8 @@ import Keycloak from "keycloak-js";
 //import TagForm from "./components/ShareForm";
 //import { useState } from "react";
 import Profile from "./components/Profile";
+import CategoryForm from "./components/CategoryForm";
+import CategoriesList from "./components/CategoriesList";
 
 function App() {
   //const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
@@ -321,13 +323,30 @@ setUserInfo(mappedUser);
           }
         />
         <Route
+          path="/NewCategorie" 
+          element={
+            <div>
+                <div className="large-white-box">
+                    <Menu />
+                    <UserMenu/>
+                    <CategoryForm/>
+                  <div className="profile">
+                    {<Profile userData={userInfo} kc = { keycloak }
+                    />}
+                  </div>
+                </div>
+            </div>
+          }
+        />
+         <Route
           path="/categories" 
           element={
             <div>
                 <div className="large-white-box">
                     <Menu />
                     <UserMenu/>
-                    <Form/>
+                    <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+                    <CategoriesList searchTerm={searchTerm} />
                   <div className="profile">
                     {<Profile userData={userInfo} kc = { keycloak }
                     />}
