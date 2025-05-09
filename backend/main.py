@@ -151,6 +151,20 @@ async def get_some_notes(prefix: str, user_id: str) -> list[NoteTitle]:
 async def does_user_exist(user_id: str) -> bool:
     return query_db(dq.does_user_exist, user_id)
 
+@app.get("/notes/categories/{categorie_id}")
+async def get_notes_by_categories(categorie_id: int) -> list[NoteTitle]:
+    notes: list[NoteTitle] = query_db(dq.get_notes_by_categories, categorie_id)
+
+    # If query_db is returning NoteTitle instances, access them via dot notation
+    return [
+        NoteTitle(id=note.id, title=note.title, permission=note.permission)
+        for note in notes
+    ]
+
+
+
+
+
 
 #endregion
 

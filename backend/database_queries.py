@@ -2,6 +2,7 @@ from pymysql.cursors import Cursor
 from models import (
     User,
     Note,
+    NoteTitle,
     Category,
     NewPermissionsForm,
     KeycloakUserCreate
@@ -252,6 +253,28 @@ VALUES (%s);
 def get_categories(cursor: Cursor) -> list[tuple[int, str]]:
     cursor.execute("SELECT id, name FROM Categories")
     return list(cursor.fetchall())
+
+# def get_notes_by_categories(cursor: Cursor, categorie_id: int) -> list[tuple[int, str]]:
+#     query = """
+#     SELECT Notes.id, Notes.title, Notes.permission
+#     FROM Notes
+#     INNER JOIN CategoryNotes ON Notes.id = CategoryNotes.note_id
+#     WHERE CategoryNotes.category_id = %s
+#     """
+#     cursor.execute(query, (categorie_id,))
+#     return cursor.fetchall()
+
+def get_notes_by_categories(cursor: Cursor, categorie_id: int) -> list[NoteTitle]:
+    query = """
+    SELECT id, title, permission FROM Notes
+    INNER JOIN CategoryNotes ON Notes.id = CategoryNotes.note_id
+    WHERE CategoryNotes.category_id = %s
+    """
+    cursor.execute(query, (categorie_id,))
+    notes = cursor.fetchall()
+
+    return [NoteTitle(id=note[0], title=note[1], permission=note[2]) for note in notes]
+
 
 
 #endregion
