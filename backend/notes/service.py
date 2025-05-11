@@ -1,7 +1,7 @@
-from notes.models import UpsertNote, Note, NoteTitle
+from notes.models import UpsertNote, Note, NoteLabel
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
-from core.models import Notes, UserNotes, CategoryNotes, Categories, t_UserCategories
+from core.models import Notes, UserNotes, CategoryNotes, Categories, t_UserCategories, Users
 from permissions.service import get_permission, is_owner
 from fastapi import HTTPException
 
@@ -105,7 +105,7 @@ def delete_note(note_id: int, user_id: str, session: Session) -> Note:
 
 
 
-def get_user_notes(user_id: str, prefix: str, session: Session) -> list[NoteTitle]:
+def get_user_notes(user_id: str, prefix: str, session: Session) -> list[NoteLabel]:
     
     user_perm_subq = (
         select(UserNotes.note_id, UserNotes.permission.label("user_permission"))
@@ -131,11 +131,23 @@ def get_user_notes(user_id: str, prefix: str, session: Session) -> list[NoteTitl
         .group_by(CategoryNotes.note_id)
         .subquery()
     )
+
+    owner_subq = (
+        select(UserNotes.note_id, Users.name, Users.last_name)
+        .join(UserNotes, UserNotes.user_id == Users.id)
+        .where(
+            UserNotes.note_id == Notes.id,
+            UserNotes.permission == 3
+        )
+        .subquery()
+    )
     
     stmt = (
         select(
             Notes.id,
             Notes.title,
+            owner_subq.c.name.label("owner_first_name"),
+            owner_subq.c.last_name.label("owner_last_name"),
             func.greatest(
                 func.coalesce(user_perm_subq.c.user_permission, 0),
                 func.coalesce(category_perm_subq.c.category_permission, 0)
@@ -146,7 +158,13 @@ def get_user_notes(user_id: str, prefix: str, session: Session) -> list[NoteTitl
             .outerjoin(Categories, Categories.id == CategoryNotes.category_id)
             .outerjoin(user_perm_subq)
             .outerjoin(category_perm_subq)
-            .group_by(Notes.id, Notes.title)
+            .outerjoin(owner_subq)
+            .group_by(
+                Notes.id, 
+                Notes.title,
+                owner_subq.c.name,
+                owner_subq.c.last_name
+        )
             .where(
                 (func.coalesce(user_perm_subq.c.user_permission, 0) > 0) |
                 (func.coalesce(category_perm_subq.c.category_permission, 0) > 0)
@@ -156,7 +174,7 @@ def get_user_notes(user_id: str, prefix: str, session: Session) -> list[NoteTitl
     results = session.execute(stmt).all()
     
     return [
-        NoteTitle.model_validate(result) 
+        NoteLabel.model_validate(result) 
         for result in results 
     ]
     

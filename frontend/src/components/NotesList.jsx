@@ -118,16 +118,12 @@ const NotesList = ({ searchTerm }) => {
             style={{ cursor: "pointer" }}
             onClick={() => navigate(`/editor/${note.id}`)}
           >
+            <span className="note-owner">
+              {`${note.owner_first_name} ${note.owner_last_name}`}
+            </span>
             {note.title}
             <span className="note-category">
-              {note.categories && note.categories.length > 0
-                ? note.categories.map((cat, index) => (
-                    <span key={index}>
-                      {cat}
-                      {index < note.categories.length - 1 && ", "}
-                    </span>
-                  ))
-                : "Prywatny"}
+              {note.categories === null ? note.categories: "Prywatny"}
             </span>
           </h3>
 

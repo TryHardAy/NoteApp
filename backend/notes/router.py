@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from core.db_connection import get_db
-from notes.models import Note, NoteTitle, UpsertNote
+from notes.models import Note, NoteLabel, UpsertNote
 import notes.service as service
 
 
@@ -46,7 +46,7 @@ async def delete_note(
     return service.delete_note(note_id, user_id, session)
 
 
-@router.get("/notes/{user_id}", response_model=list[NoteTitle])
+@router.get("/notes/{user_id}", response_model=list[NoteLabel])
 async def get_user_notes(
     user_id: str, 
     prefix: str = "", 

@@ -13,9 +13,11 @@ class Note(UpsertNote):
     permission: int = None
 
 
-class NoteTitle(BaseModel):
+class NoteLabel(BaseModel):
     id: int
     title: str
+    owner_first_name: str
+    owner_last_name: str
     permission: int
     categories: str | None = None
 
