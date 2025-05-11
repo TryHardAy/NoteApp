@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS UserCategories(
     user_id VARCHAR(50),
     category_id INT,
     PRIMARY KEY (user_id, category_id),
-    FOREIGN KEY (user_id) REFERENCES Users(id),
-    FOREIGN KEY (category_id) REFERENCES Categories(id)
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES Categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Notes(
@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS UserNotes(
     note_id INT,
     permission INT NOT NULL,
     PRIMARY KEY (user_id, note_id),
-    FOREIGN KEY (user_id) REFERENCES Users(id),
-    FOREIGN KEY (note_id) REFERENCES Notes(id)
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (note_id) REFERENCES Notes(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS CategoryNotes(
@@ -43,24 +43,7 @@ CREATE TABLE IF NOT EXISTS CategoryNotes(
     note_id INT,
     permission INT NOT NULL,
     PRIMARY KEY (category_id, note_id),
-    FOREIGN KEY (category_id) REFERENCES Categories(id),
-    FOREIGN KEY (note_id) REFERENCES Notes(id)
+    FOREIGN KEY (category_id) REFERENCES Categories(id) ON DELETE CASCADE,
+    FOREIGN KEY (note_id) REFERENCES Notes(id) ON DELETE CASCADE
 );
 
-
-DELIMITER $$
-
-CREATE PROCEDURE CreateNote(
-    IN Title VARCHAR(50), 
-    IN Content TEXT, 
-    IN UserID VARCHAR(50)
-    )
-BEGIN
-    INSERT INTO Notes(title, content)
-    VALUES(Title, Content);
-
-    INSERT INTO UserNotes (user_id, note_id, permission)
-    VALUES (UserID, LAST_INSERT_ID(), 3);
-END $$
-
-DELIMITER ;

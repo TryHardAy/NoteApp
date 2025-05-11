@@ -98,7 +98,7 @@ const TagForm = ({ noteId, onSave, userId }) => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/note/category/add", {
+      const response = await fetch("http://localhost:5000/permission/add", {
         method: "PUT",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
