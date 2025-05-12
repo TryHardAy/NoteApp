@@ -153,8 +153,17 @@ async def does_user_exist(user_id: str) -> bool:
 
 @app.get("/notes/categories/{categorie_id}")
 async def get_notes_by_categories(categorie_id: int) -> list[NoteTitle]:
-    notes: list[tuple[int, str]] = query_db(dq.get_notes_by_categories, categorie_id)
-    return [NoteTitle(id=note[0], title=note[1]) for note in notes]
+    notes: list[NoteTitle] = query_db(dq.get_notes_by_categories, categorie_id)
+
+    # If query_db is returning NoteTitle instances, access them via dot notation
+    return [
+        NoteTitle(id=note.id, title=note.title, permission=note.permission)
+        for note in notes
+    ]
+
+
+
+
 
 
 #endregion
@@ -270,7 +279,6 @@ async def get_users():
         raise HTTPException(status_code=500, detail=str(e))
     
 #endregion
-
 
 
 

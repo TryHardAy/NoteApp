@@ -6,10 +6,29 @@ import TagForm from "./ShareForm";
 
 const NotesList = ({ searchTerm }) => {
   const [notes, setNotes] = useState([]);
+  const [categories, setCategories] = useState([]); // stan dla kategorii
+  const [selectedCategory, setSelectedCategory] = useState(null); // stan dla wybranej kategorii
   const [menuOpen, setMenuOpen] = useState(null);
   const [popupNoteId, setPopupNoteId] = useState(null);
   const navigate = useNavigate();
 
+  // Pobranie kategorii
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/categories");
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Błąd podczas pobierania kategorii:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Pobranie notatek
   useEffect(() => {
     const fetchNotes = async () => {
       const token = localStorage.getItem("token");
@@ -24,7 +43,12 @@ const NotesList = ({ searchTerm }) => {
           return;
         }
 
-        const response = await fetch(`http://localhost:5000/notes/${userId}`);
+        let url = `http://localhost:5000/notes/${userId}`;
+        if (selectedCategory !== null) {
+          url = `http://localhost:5000/notes/categories/${selectedCategory}`;
+        }
+
+        const response = await fetch(url);
         const notesData = await response.json();
 
         const categoriesResponse = await fetch("http://localhost:5000/categories");
@@ -48,32 +72,29 @@ const NotesList = ({ searchTerm }) => {
     };
 
     fetchNotes();
-  }, []);
+  }, [selectedCategory]);
 
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-  
+
       const decodedToken = jwtDecode(token);
       const userId = decodedToken.sub;
-  
+
       if (!userId) {
         console.error("Brak userId w tokenie");
         return;
       }
-  
-      // Wysyłamy zapytanie do backendu o usunięcie
+
       const response = await fetch(`http://localhost:5000/note/${id}?user_id=${userId}`, {
         method: "DELETE",
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        // Usuwamy lokalnie po udanym usunięciu z backendu
         setNotes(notes.filter((note) => note.id !== id));
-        //alert(data.message); // Można wyświetlić komunikat o sukcesie
       } else {
         console.error("Błąd podczas usuwania notatki:", data);
       }
@@ -81,10 +102,6 @@ const NotesList = ({ searchTerm }) => {
       console.error("Błąd podczas usuwania notatki:", error);
     }
   };
-  
-  
-  
-  
 
   const handleDownload = async (id) => {
     try {
@@ -103,13 +120,28 @@ const NotesList = ({ searchTerm }) => {
     }
   };
 
-  // Filter notes based on the searchTerm
+  // Filtrowanie notatek po searchTerm
   const filteredNotes = notes.filter((note) =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="notes-list">
+      {/* Dropdown for category selection */}
+      <select
+        onChange={(e) =>
+          setSelectedCategory(e.target.value === "" ? null : Number(e.target.value))
+        }
+        value={selectedCategory ?? ""}
+      >
+        <option value="">Wybierz kategorię</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+      </select>
+
       {filteredNotes.map((note) => (
         <div key={note.id} className="note-card">
           <p>{note.id}</p>
@@ -169,4 +201,3 @@ const NotesList = ({ searchTerm }) => {
 };
 
 export default NotesList;
-
