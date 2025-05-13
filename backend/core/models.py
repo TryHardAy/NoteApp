@@ -25,7 +25,12 @@ class Notes(Base):
     content: Mapped[Optional[str]] = mapped_column(Text)
 
     CategoryNotes: Mapped[List['CategoryNotes']] = relationship('CategoryNotes', back_populates='note')
-    UserNotes: Mapped[List['UserNotes']] = relationship('UserNotes', back_populates='note')
+    UserNotes: Mapped[List['UserNotes']] = relationship(
+        'UserNotes', 
+        back_populates='note',
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
 
 class Users(Base):

@@ -46,7 +46,13 @@ def get_db():
 
 
 def has_pending_changes(session: Session) -> bool:
-    return session.new or session.dirty or session.deleted or session.info.get("was_flushed", False)
+    return (
+        session.new or 
+        session.dirty or 
+        session.deleted or 
+        session.info.get("was_flushed", False) or 
+        session.info.get("has_changes", False)
+    )
 
 
 @event.listens_for(Session, "after_flush")
@@ -56,4 +62,5 @@ def receive_after_flush(session: Session, flush_context):
 @event.listens_for(Session, "after_commit")
 def receive_after_commit(session: Session):
     session.info["was_flushed"] = False
+    session.info["has_changes"] = False
 
