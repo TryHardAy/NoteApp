@@ -16,6 +16,8 @@ import Keycloak from "keycloak-js";
 //import TagForm from "./components/ShareForm";
 //import { useState } from "react";
 import Profile from "./components/Profile";
+import UserList from "./components/UserList";
+import CategoriesList from "./components/CategoryList";
 
 function App() {
   //const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
@@ -286,24 +288,24 @@ setUserInfo(mappedUser);
           }
         />
 
-        {/*<Route path="/users" element={<Users />} />*/}
-        <Route
-          path="/users" 
-          element={
-            <div>
-                <div className="large-white-box">
-                  <Menu />
-                  <UserMenu/>
-                  <SearchInput/>
-                  
-                  <div className="profile">
-                    {<Profile userData={userInfo} kc = { keycloak }
-                    />}
-                  </div>
-                </div>
-            </div>
-          }
-        />
+<Route
+  path="/users" 
+  element={
+    <div>
+      <div className="large-white-box">
+        <Menu />
+        <UserMenu />
+        <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <div className="notes-container">
+          <UserList searchTerm={searchTerm} userId={userId} />
+        </div>
+        <div className="profile">
+          <Profile userData={userInfo} kc={keycloak} />
+        </div>
+      </div>
+    </div>
+  }
+/>
         <Route
           path="/NewUser" 
           element={
@@ -336,7 +338,24 @@ setUserInfo(mappedUser);
             </div>
           }
         />
+        <Route
+  path="/categoryList"
+  element={
+    <div>
+      <div className="large-white-box">
+        <Menu />
+        <UserMenu />
+        <CategoriesList />
+        <div className="profile">
+          <Profile userData={userInfo} kc={keycloak} />
+        </div>
+      </div>
+    </div>
+  }
+/>
+
       </Routes>
+      
     </Router>
   )}
     </>

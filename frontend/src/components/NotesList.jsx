@@ -6,40 +6,56 @@ import TagForm from "./ShareForm";
 
 const NotesList = ({ searchTerm }) => {
   const [notes, setNotes] = useState([]);
+  const [allCategories, setAllCategories] = useState([]); // tylko z has_user === true
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [menuOpen, setMenuOpen] = useState(null);
   const [popupNoteId, setPopupNoteId] = useState(null);
+  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
+  // Ustal użytkownika
   useEffect(() => {
-    const fetchNotes = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const decodedToken = jwtDecode(token);
+    const uid = decodedToken.sub;
+    setUserId(uid);
+  }, []);
+
+  // Pobierz przypisane użytkownikowi kategorie (has_user === true)
+  useEffect(() => {
+    const fetchUserCategories = async () => {
+      if (!userId) return;
 
       try {
-        const decodedToken = jwtDecode(token);
-        const userId = decodedToken.sub;
+        const response = await fetch(`http://localhost:5000/categories/user/${userId}`);
+        const data = await response.json();
+        const assigned = data.filter((cat) => cat.has_user);
+        setAllCategories(assigned);
+        console.log("Przypisane kategorie:", assigned);
+      } catch (error) {
+        console.error("Błąd przy pobieraniu kategorii użytkownika:", error);
+      }
+    };
 
-        if (!userId) {
-          console.error("Brak userId w tokenie");
-          return;
-        }
+    fetchUserCategories();
+  }, [userId]);
 
+  // Pobierz notatki użytkownika i przypisz im przypisane kategorie
+  useEffect(() => {
+    const fetchNotes = async () => {
+      if (!userId) return;
+
+      try {
         const response = await fetch(`http://localhost:5000/notes/${userId}`);
         const notesData = await response.json();
 
-        const categoriesResponse = await fetch("http://localhost:5000/categories");
-        const categoriesData = await categoriesResponse.json();
-
-        const notesWithCategories = notesData.map((note) => {
-          const categories = categoriesData
-            .filter((category) => category.note_id === note.id)
-            .map((category) => category.categories.split(","));
-
-          return {
-            ...note,
-            categories: categories.flat(),
-          };
-        });
+        // Wszystkim notatkom przypisz te same przypisane kategorie
+        const notesWithCategories = notesData.map((note) => ({
+          ...note,
+          categories: allCategories.map((cat) => cat.name),
+        }));
 
         setNotes(notesWithCategories);
       } catch (error) {
@@ -48,32 +64,18 @@ const NotesList = ({ searchTerm }) => {
     };
 
     fetchNotes();
-  }, []);
+  }, [userId, allCategories]);
 
   const handleDelete = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-  
-      const decodedToken = jwtDecode(token);
-      const userId = decodedToken.sub;
-  
-      if (!userId) {
-        console.error("Brak userId w tokenie");
-        return;
-      }
-  
-      // Wysyłamy zapytanie do backendu o usunięcie
       const response = await fetch(`http://localhost:5000/note/${id}?user_id=${userId}`, {
         method: "DELETE",
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
-        // Usuwamy lokalnie po udanym usunięciu z backendu
         setNotes(notes.filter((note) => note.id !== id));
-        //alert(data.message); // Można wyświetlić komunikat o sukcesie
       } else {
         console.error("Błąd podczas usuwania notatki:", data);
       }
@@ -81,10 +83,6 @@ const NotesList = ({ searchTerm }) => {
       console.error("Błąd podczas usuwania notatki:", error);
     }
   };
-  
-  
-  
-  
 
   const handleDownload = async (id) => {
     try {
@@ -103,13 +101,34 @@ const NotesList = ({ searchTerm }) => {
     }
   };
 
-  // Filter notes based on the searchTerm
-  const filteredNotes = notes.filter((note) =>
-    note.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 🔍 Filtrowanie notatek
+  const filteredNotes = notes.filter((note) => {
+    const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === null ||
+      note.categories?.includes(
+        allCategories.find((cat) => cat.id === selectedCategory)?.name
+      );
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleCategoryChange = (e) => {
+    const selectedId = e.target.value === "" ? null : Number(e.target.value);
+    setSelectedCategory(selectedId);
+  };
 
   return (
     <div className="notes-list">
+      {/* Dropdown do filtrowania po przypisanych kategoriach */}
+      <select onChange={handleCategoryChange} value={selectedCategory ?? ""}>
+        <option value="">Wszystkie kategorie</option>
+        {allCategories.map((cat) => (
+          <option key={cat.id} value={cat.id}>
+            {cat.name}
+          </option>
+        ))}
+      </select>
+
       {filteredNotes.map((note) => (
         <div key={note.id} className="note-card">
           <p>{note.id}</p>
@@ -120,10 +139,12 @@ const NotesList = ({ searchTerm }) => {
           >
             <span className="note-owner">
               {`${note.owner_first_name} ${note.owner_last_name}`}
-            </span>
+            </span>{" "}
             {note.title}
             <span className="note-category">
-              {note.categories === null ? note.categories: "Prywatny"}
+              {note.categories && note.categories.length > 0
+                ? note.categories.join(", ")
+                : "Prywatny"}
             </span>
           </h3>
 
@@ -149,11 +170,10 @@ const NotesList = ({ searchTerm }) => {
         </div>
       ))}
 
-      {/* Popup for sharing categories */}
       {popupNoteId && (
         <div className="popup-overlay">
           <div className="popup">
-            <TagForm noteId={popupNoteId} onSave={() => setPopupNoteId(null)} />
+            <TagForm noteId={popupNoteId} onSave={() => setPopupNoteId(null)} userId={userId} />
             <button className="close-btn" onClick={() => setPopupNoteId(null)}>
               Zamknij
             </button>
@@ -165,4 +185,3 @@ const NotesList = ({ searchTerm }) => {
 };
 
 export default NotesList;
-
