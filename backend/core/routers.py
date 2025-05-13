@@ -3,6 +3,8 @@ from users.router import router as users_router
 from notes.router import router as notes_router
 from categories.router import router as categories_router
 from permissions.router import router as permissions_router
+from userCategories.router import router as user_categories_router
+
 
 
 routes: list[APIRouter] = [
@@ -10,6 +12,7 @@ routes: list[APIRouter] = [
     notes_router,
     categories_router,
     permissions_router,
+    user_categories_router,
     # Add more routers here as needed
 ]
 
