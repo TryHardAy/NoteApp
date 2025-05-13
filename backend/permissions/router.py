@@ -10,7 +10,7 @@ router = APIRouter(tags=["Permissions"])
 
 
 
-@router.put("/permission/add/{user_id}", response_model=str)
+@router.put("/permission/add/{user_id}")
 async def add_category_user_permission(
     user_id: str, 
     data: Annotated[NewPermissionsForm, Form()],

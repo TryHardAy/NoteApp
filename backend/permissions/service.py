@@ -73,70 +73,54 @@ def add_category_user_permission(data: NewPermissionsForm, user_id: str, session
         )
 
     if data.category_permission != 0:
-        categoryNote = CategoryNotes(
-            note_id=data.note_id,
-            category_id=data.category_id,
-            permission=data.category_permission,
-        )
-
-        try:
-            session.add(categoryNote)
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail="Error while adding category permission. Category might not exist.",
+        categoryNote = session.scalars(
+            select(CategoryNotes)
+            .where(
+                CategoryNotes.category_id == data.category_id,
+                CategoryNotes.note_id == data.note_id
             )
+        ).one_or_none()
+
+        if categoryNote is not None:
+            categoryNote.permission = data.category_permission
+        else:
+            categoryNote = CategoryNotes(
+                note_id=data.note_id,
+                category_id=data.category_id,
+                permission=data.category_permission,
+            )
+
+            try:
+                session.add(categoryNote)
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Error while adding category permission. Category might not exist.",
+                )
         
     if data.user_permission != 0:
-        userNote = UserNotes(
-            note_id=data.note_id,
-            user_id=data.user_id,
-            permission=data.user_permission,
-        )
+        userNote = session.scalars(
+            select(UserNotes)
+            .where(
+                UserNotes.user_id == data.user_id,
+                UserNotes.note_id == data.note_id
+            )
+        ).one_or_none()
 
-        try:
-            session.add(userNote)
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail="Error while adding user permission. User might not exist.",
+        if userNote is not None:
+            userNote.permission = data.user_permission
+        else:
+            userNote = UserNotes(
+                note_id=data.note_id,
+                user_id=data.user_id,
+                permission=data.user_permission,
             )
 
-
-
-
-
-
-
-    template = """
-INSERT INTO {table}({column}, note_id, permission)
-VALUES (%s, %s, %s)
-ON DUPLICATE KEY UPDATE
-permission = %s;
-"""
-    if data.category_id != 0:
-        query = template.format(
-            table='CategoryNotes', 
-            column='category_id'
-            )
-        cursor.execute(query, (
-            data.category_id,
-            data.note_id,
-            data.category_permission,
-            data.category_permission
-            ))
-        print("Przypisano Categorie do Notatki")
-    
-    if data.user_id != "0":
-        query = template.format(
-            table='UserNotes', 
-            column='user_id'
-            )
-        cursor.execute(query, (
-            data.user_id,
-            data.note_id,
-            data.user_permission,
-            data.user_permission
-            ))
-        print("Przypisano Usera do Notatki")
+            try:
+                session.add(userNote)
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Error while adding user permission. User might not exist.",
+                )
 
