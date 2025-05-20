@@ -28,7 +28,7 @@ config = {
 }
 
 origins = [
-    "http://localhost:5173",  # frontend
+    "http://localhost:80",  # frontend
     #"http://localhost:5000" #backend
 ]
 

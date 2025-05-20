@@ -35,7 +35,7 @@ function App() {
 
     if (val === null) {
       setKeycloak(new Keycloak({
-        url: "http://localhost:8080",
+        url: "https://keycloak.yellowwave-6c659c21.westeurope.azurecontainerapps.io",
         realm: "NoteAppRealm",
         clientId: "client",
       }));
