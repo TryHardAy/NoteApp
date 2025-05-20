@@ -68,7 +68,7 @@ const NotesList = ({ searchTerm }) => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/note/${id}?user_id=${userId}`, {
+      const response = await fetch(`http://localhost:5000/note/${id}/${userId}`, {
         method: "DELETE",
       });
 

@@ -36,29 +36,32 @@ def remove_user_from_category(user_id: str, category_id: int, session: Session):
 
 
 def get_user_categories(user_id: str, session: Session) -> list[UserCategory]:
-    # userCategoryAlias = aliased(t_UserCategories)
+    stmt1 = select(Categories)
 
-    stmt = (
-        select(
-            Categories.id, 
-            Categories.name,
-            case(
-                (t_UserCategories.c.user_id == user_id, True),
-                else_=False
-            ).label("has_user")
-        )
-        .outerjoin(
-            t_UserCategories, 
-            Categories.id == t_UserCategories.c.category_id
-        )
-    )
-    
     try:
-        categories = session.execute(stmt).fetchall()
+        categories = session.scalars(stmt1).fetchmany()
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while fetching categories")
 
-    return [UserCategory.model_validate(category) for category in categories]
+    stmt2 = select(t_UserCategories).where(t_UserCategories.c.user_id == user_id)
+
+    try:
+        userCategories = session.scalars(stmt2).fetchmany()
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Error while fetching categories")
+
+    result = []
+
+    for category in categories:
+        result.append(
+            UserCategory(
+                id=category.id, 
+                name=category.name,
+                has_user=(category.id in userCategories),
+            )
+        )
+
+    return result
 
 
 def update_user_categories(
@@ -100,9 +103,9 @@ def update_user_categories(
         result = session.scalars(is_exists_stmt).all()
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while fetching categories")
-    
+    print(f'{result=}')
     to_add2 = [{"user_id": user_id, "category_id": id} for id in to_add if id not in result]
-
+    print(f'{to_add2=}')
     if len(to_add2) == 0:
         return
 
@@ -110,7 +113,7 @@ def update_user_categories(
         result = session.execute(t_UserCategories.insert().values(to_add2))
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while adding categories to user")
-    
+    session.commit()
     if result.rowcount > 0:
         session.info["has_changes"] = True
 
