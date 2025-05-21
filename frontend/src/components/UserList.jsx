@@ -9,7 +9,6 @@ const UserList = ({ searchTerm, userId }) => {
   const [popupOpen, setPopupOpen] = useState(false);
   const [activeUserId, setActiveUserId] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -39,9 +38,8 @@ const UserList = ({ searchTerm, userId }) => {
     try {
       const res = await fetch(`http://localhost:5000/categories/user/${uid}`);
       const data = await res.json();
+
       setCategories(data);
-      // const initiallySelected = data.filter((c) => c.has_user).map((c) => c.id);
-      // setSelectedCategories(initiallySelected);
       setActiveUserId(uid);
       setPopupOpen(true);
     } catch (err) {
@@ -50,14 +48,6 @@ const UserList = ({ searchTerm, userId }) => {
   };
 
   const handleCategoryChange = (changedCategory) => {
-    // category.has_user = !category.has_user;
-    // setCategories(categories);
-    // setCategories((prev) =>
-    //   prev.includes(categoryId)
-    //     ? prev.filter((id) => id !== categoryId)
-    //     : [...prev, categoryId]
-    // );
-
     const newCategories = categories.map(category =>
       category.id === changedCategory.id
         ? { ...category, has_user: !category.has_user }
@@ -67,11 +57,6 @@ const UserList = ({ searchTerm, userId }) => {
   };
 
   const handleSubmitCategories = async () => {
-    // const updated = categories.map((cat) => ({
-    //   ...cat,
-    //   has_user: selectedCategories.includes(cat.id),
-    // }));
-
     try {
       await fetch(`http://localhost:5000/categories/user/${activeUserId}`, {
         method: "POST",

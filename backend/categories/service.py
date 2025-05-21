@@ -21,6 +21,16 @@ def get_categories(session: Session) -> list[Category]:
     return [Category.model_validate(category) for category in categories]
 
 
+def update_category(category_id: int, name: str, session: Session):
+    try:
+        category = session.scalars(select(Categories).where(Categories.id == category_id)).one()
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    category.name = name
+    return Category.model_validate(category)
+
+
 def delete_category(category_id: int, session: Session) -> Category:
     stmt = select(Categories).where(Categories.id == category_id)
     
@@ -29,7 +39,7 @@ def delete_category(category_id: int, session: Session) -> Category:
     except Exception as e:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    model = Category.model_validate(category)
     session.delete(category)
-
-    return Category.model_validate(category)
+    return model
 

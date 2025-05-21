@@ -96,27 +96,29 @@ def delete_note(note_id: int, user_id: str, session: Session) -> Note:
             status_code=404, 
             detail="Note not found"
             )
-    
+    note_model = Note.model_validate(note)
+
     session.delete(note)
 
-    note = Note.model_validate(note)
-    note.permission = 3
-    return note
+    note_model.permission = 3
+    return note_model
 
 
 
-def get_user_notes(user_id: str, prefix: str, session: Session) -> list[NoteLabel]:
-    
-    user_perm_subq = (
-        select(UserNotes.note_id, UserNotes.permission.label("user_permission"))
-        .join(Notes, UserNotes.note_id == Notes.id)
-        .where(
-            UserNotes.user_id == user_id, 
-            UserNotes.permission > 0, 
-            Notes.title.like(f"{prefix}%")
+def get_user_notes(user_id: str, category_id: int, prefix: str, session: Session) -> list[NoteLabel]:
+    if category_id != 0:
+        user_perm_subq = select(UserNotes.note_id, UserNotes.permission.label("user_permission")).where(UserNotes.user_id=='').subquery()
+    else:
+        user_perm_subq = (
+            select(UserNotes.note_id, UserNotes.permission.label("user_permission"))
+            .join(Notes, UserNotes.note_id == Notes.id)
+            .where(
+                UserNotes.user_id == user_id, 
+                UserNotes.permission > 0, 
+                Notes.title.like(f"{prefix}%")
+            )
+            .subquery()
         )
-        .subquery()
-    )
 
     category_perm_subq = (
         select(CategoryNotes.note_id, func.max(CategoryNotes.permission).label("category_permission"))
@@ -129,8 +131,12 @@ def get_user_notes(user_id: str, prefix: str, session: Session) -> list[NoteLabe
             Notes.title.like(f"{prefix}%")
         )
         .group_by(CategoryNotes.note_id)
-        .subquery()
     )
+
+    if category_id != 0:
+        category_perm_subq = category_perm_subq.where(Categories.id == category_id).subquery()
+    else:
+        category_perm_subq = category_perm_subq.subquery()
 
     owner_subq = (
         select(UserNotes.note_id, Users.name, Users.last_name)
@@ -170,8 +176,11 @@ def get_user_notes(user_id: str, prefix: str, session: Session) -> list[NoteLabe
                 (func.coalesce(category_perm_subq.c.category_permission, 0) > 0)
         )
     )
-    
-    results = session.execute(stmt).all()
+        
+    try:
+        results = session.execute(stmt).all()
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Error while fetching notes: {e}")
     
     return [
         NoteLabel.model_validate(result) 

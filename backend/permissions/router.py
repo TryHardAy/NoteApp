@@ -16,8 +16,9 @@ async def add_category_user_permission(
     data: Annotated[NewPermissionsForm, Form()],
     session: Session = Depends(get_db)
     ):
+    print(f"{data=}")
     service.add_category_user_permission(data, user_id, session)
 
-    return {"message": "Zapisano uprawnienia użytkownika"}
+    return "Zapisano uprawnienia użytkownika"
 
 

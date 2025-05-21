@@ -12,4 +12,10 @@ class Category(UpsertCategory):
     id: int
 
 
+class CategoryNameUpdate(BaseModel):
+    name: str
+
+    class Config:
+        from_attributes = True
+
 

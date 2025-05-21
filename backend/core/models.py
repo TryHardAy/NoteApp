@@ -14,7 +14,12 @@ class Categories(Base):
     name: Mapped[str] = mapped_column(String(100))
 
     user: Mapped[List['Users']] = relationship('Users', secondary='UserCategories', back_populates='category')
-    CategoryNotes: Mapped[List['CategoryNotes']] = relationship('CategoryNotes', back_populates='category')
+    CategoryNotes: Mapped[List['CategoryNotes']] = relationship(
+        'CategoryNotes', 
+        back_populates='category', 
+        cascade="all, delete-orphan", 
+        passive_deletes=True
+    )
 
 
 class Notes(Base):
@@ -24,7 +29,12 @@ class Notes(Base):
     title: Mapped[Optional[str]] = mapped_column(String(50))
     content: Mapped[Optional[str]] = mapped_column(Text)
 
-    CategoryNotes: Mapped[List['CategoryNotes']] = relationship('CategoryNotes', back_populates='note')
+    CategoryNotes: Mapped[List['CategoryNotes']] = relationship(
+        'CategoryNotes', 
+        back_populates='note',
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
     UserNotes: Mapped[List['UserNotes']] = relationship(
         'UserNotes', 
         back_populates='note',

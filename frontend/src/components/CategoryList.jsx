@@ -38,18 +38,19 @@ const CategoriesList = ({ searchTerm }) => {
   // Zapis nowej nazwy kategorii do backendu (dopasowany do /category/{id})
   const handleSaveCategoryName = async () => {
     try {
-      await fetch(`http://localhost:5000/category/${popupCategoryId}`, {
+      const response = await fetch(`http://localhost:5000/category/${popupCategoryId}`, {
         method: "PUT", // Musisz mieć taki endpoint w FastAPI!
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ name: categoryName }),
       });
+      const resCategory = await response.json();
 
       setCategories((prev) =>
         prev.map((category) =>
           category.id === popupCategoryId
-            ? { ...category, name: categoryName }
+            ? resCategory
             : category
         )
       );

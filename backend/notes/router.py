@@ -46,13 +46,16 @@ async def delete_note(
     return service.delete_note(note_id, user_id, session)
 
 
-@router.get("/notes/{user_id}", response_model=list[NoteLabel])
+@router.get("/notes/{user_id}/{category_id}", response_model=list[NoteLabel])
 async def get_user_notes(
-    user_id: str, 
+    user_id: str,
+    category_id: int = 0,
     prefix: str = "", 
     session: Session = Depends(get_db)
     ):
-    return service.get_user_notes(user_id, prefix, session)
+    return service.get_user_notes(user_id, category_id, prefix, session)
+
+
 
 
 # @router.get("/notes/{user_id}")

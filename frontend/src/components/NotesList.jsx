@@ -7,7 +7,7 @@ import TagForm from "./ShareForm";
 const NotesList = ({ searchTerm }) => {
   const [notes, setNotes] = useState([]);
   const [allCategories, setAllCategories] = useState([]); // tylko z has_user === true
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(0);
   const [menuOpen, setMenuOpen] = useState(null);
   const [popupNoteId, setPopupNoteId] = useState(null);
   const [userId, setUserId] = useState(null);
@@ -48,23 +48,25 @@ const NotesList = ({ searchTerm }) => {
       if (!userId) return;
 
       try {
-        const response = await fetch(`http://localhost:5000/notes/${userId}`);
+        const response = await fetch(`http://localhost:5000/notes/${userId}/${selectedCategory}`);
         const notesData = await response.json();
+        console.log(selectedCategory);
+        console.log(`notki = ${notes}`)
 
         // Wszystkim notatkom przypisz te same przypisane kategorie
-        const notesWithCategories = notesData.map((note) => ({
-          ...note,
-          categories: allCategories.map((cat) => cat.name),
-        }));
+        // const notesWithCategories = notesData.map((note) => ({
+        //   ...note,
+        //   categories: allCategories.map((cat) => cat.name),
+        // }));
 
-        setNotes(notesWithCategories);
+        setNotes(notesData);
       } catch (error) {
         console.error("Błąd podczas pobierania notatek:", error);
       }
     };
 
     fetchNotes();
-  }, [userId, allCategories]);
+  }, [userId, allCategories, selectedCategory, popupNoteId]);
 
   const handleDelete = async (id) => {
     try {
@@ -102,18 +104,18 @@ const NotesList = ({ searchTerm }) => {
   };
 
   // 🔍 Filtrowanie notatek
-  const filteredNotes = notes.filter((note) => {
-    const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === null ||
-      note.categories?.includes(
-        allCategories.find((cat) => cat.id === selectedCategory)?.name
-      );
-    return matchesSearch && matchesCategory;
-  });
+  // const filteredNotes = notes.filter((note) => {
+  //   const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase());
+  //   const matchesCategory =
+  //     selectedCategory === null ||
+  //     note.categories?.includes(
+  //       allCategories.find((cat) => cat.id === selectedCategory)?.name
+  //     );
+  //   return matchesSearch && matchesCategory;
+  // });
 
   const handleCategoryChange = (e) => {
-    const selectedId = e.target.value === "" ? null : Number(e.target.value);
+    const selectedId = e.target.value === "" ? 0 : Number(e.target.value);
     setSelectedCategory(selectedId);
   };
 
@@ -128,8 +130,7 @@ const NotesList = ({ searchTerm }) => {
           </option>
         ))}
       </select>
-
-      {filteredNotes.map((note) => (
+      {notes.length != 0 && notes.map((note) => (
         <div key={note.id} className="note-card">
           <p>{note.id}</p>
           <h3
@@ -142,8 +143,8 @@ const NotesList = ({ searchTerm }) => {
             </span>{" "}
             {note.title}
             <span className="note-category">
-              {note.categories && note.categories.length > 0
-                ? note.categories.join(", ")
+              {note.categories 
+                ? note.categories
                 : "Prywatny"}
             </span>
           </h3>

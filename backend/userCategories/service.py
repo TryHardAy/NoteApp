@@ -113,10 +113,10 @@ def update_user_categories(
 
     try:
         result = session.execute(t_UserCategories.insert().values(to_add2))
+        session.commit()
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while adding categories to user")
     
-    session.commit()
     if result.rowcount > 0:
         session.info["has_changes"] = True
 

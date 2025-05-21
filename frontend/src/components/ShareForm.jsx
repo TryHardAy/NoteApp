@@ -141,8 +141,8 @@ const TagForm = ({ noteId, onSave, userId }) => {
           value={categoryPermission}
           onChange={handlePermissionChange}
         >
-          <option value={1}>Pełne uprawnienia</option>
-          <option value={0}>Tylko odczyt</option>
+          <option value={2}>Pełne uprawnienia</option>
+          <option value={1}>Tylko odczyt</option>
         </select>
         <br />
 
