@@ -40,8 +40,8 @@ const UserList = ({ searchTerm, userId }) => {
       const res = await fetch(`http://localhost:5000/categories/user/${uid}`);
       const data = await res.json();
       setCategories(data);
-      const initiallySelected = data.filter((c) => c.has_user).map((c) => c.id);
-      setSelectedCategories(initiallySelected);
+      // const initiallySelected = data.filter((c) => c.has_user).map((c) => c.id);
+      // setSelectedCategories(initiallySelected);
       setActiveUserId(uid);
       setPopupOpen(true);
     } catch (err) {
@@ -49,19 +49,28 @@ const UserList = ({ searchTerm, userId }) => {
     }
   };
 
-  const handleCategoryChange = (categoryId) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
+  const handleCategoryChange = (changedCategory) => {
+    // category.has_user = !category.has_user;
+    // setCategories(categories);
+    // setCategories((prev) =>
+    //   prev.includes(categoryId)
+    //     ? prev.filter((id) => id !== categoryId)
+    //     : [...prev, categoryId]
+    // );
+
+    const newCategories = categories.map(category =>
+      category.id === changedCategory.id
+        ? { ...category, has_user: !category.has_user }
+        : category
     );
+    setCategories(newCategories);
   };
 
   const handleSubmitCategories = async () => {
-    const updated = categories.map((cat) => ({
-      ...cat,
-      has_user: selectedCategories.includes(cat.id),
-    }));
+    // const updated = categories.map((cat) => ({
+    //   ...cat,
+    //   has_user: selectedCategories.includes(cat.id),
+    // }));
 
     try {
       await fetch(`http://localhost:5000/categories/user/${activeUserId}`, {
@@ -69,7 +78,7 @@ const UserList = ({ searchTerm, userId }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updated),
+        body: JSON.stringify(categories),
       });
 
       setPopupOpen(false);
@@ -127,8 +136,8 @@ const UserList = ({ searchTerm, userId }) => {
                   <div key={category.id}>
                     <input
                       type="checkbox"
-                      checked={selectedCategories.includes(category.id)}
-                      onChange={() => handleCategoryChange(category.id)}
+                      checked={category.has_user}
+                      onChange={() => handleCategoryChange(category)}
                     />
                     <label>{category.name}</label>
                   </div>

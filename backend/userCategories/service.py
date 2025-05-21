@@ -39,16 +39,16 @@ def get_user_categories(user_id: str, session: Session) -> list[UserCategory]:
     stmt1 = select(Categories)
 
     try:
-        categories = session.scalars(stmt1).fetchmany()
+        categories = session.scalars(stmt1).all()
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while fetching categories")
 
-    stmt2 = select(t_UserCategories).where(t_UserCategories.c.user_id == user_id)
+    stmt2 = select(t_UserCategories.c.category_id).where(t_UserCategories.c.user_id == user_id)
 
     try:
-        userCategories = session.scalars(stmt2).fetchmany()
+        userCategories = session.scalars(stmt2).all()
     except Exception as e:
-        raise HTTPException(status_code=404, detail="Error while fetching categories")
+        raise HTTPException(status_code=404, detail="Error while fetching UserCategories")
 
     result = []
 
@@ -77,19 +77,21 @@ def update_user_categories(
             to_add.append(category.id)
         else:
             to_remove.append(category.id)
+    print(f'{to_remove=}')
 
-    remove_stmt = (
-        delete(t_UserCategories)
-        .where(
-            t_UserCategories.c.user_id == user_id,
-            t_UserCategories.c.category_id.in_(to_remove)
+    if len(to_remove) != 0:
+        remove_stmt = (
+            delete(t_UserCategories)
+            .where(
+                t_UserCategories.c.user_id == user_id,
+                t_UserCategories.c.category_id.in_(to_remove)
+            )
         )
-    )
-
-    try:
-        session.execute(remove_stmt)
-    except Exception as e:
-        raise HTTPException(status_code=404, detail="Error while removing categories from user")
+        try:
+            session.execute(remove_stmt)
+            session.commit()
+        except Exception as e:
+            raise HTTPException(status_code=404, detail="Error while removing categories from user")
 
     is_exists_stmt = (
         select(t_UserCategories.c.category_id)
@@ -103,9 +105,9 @@ def update_user_categories(
         result = session.scalars(is_exists_stmt).all()
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while fetching categories")
-    print(f'{result=}')
+
     to_add2 = [{"user_id": user_id, "category_id": id} for id in to_add if id not in result]
-    print(f'{to_add2=}')
+
     if len(to_add2) == 0:
         return
 
@@ -113,6 +115,7 @@ def update_user_categories(
         result = session.execute(t_UserCategories.insert().values(to_add2))
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while adding categories to user")
+    
     session.commit()
     if result.rowcount > 0:
         session.info["has_changes"] = True
