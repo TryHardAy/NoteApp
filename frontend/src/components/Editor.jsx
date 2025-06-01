@@ -108,19 +108,19 @@ const handleSaveClick = () => {
         style={{ minHeight: "300px", padding: "10px" }}
       />
       <button onClick={handleSaveClick} disabled={isOffline}>
-        {isEditing ? "Update file" : "Save file"}
+        {isEditing ? "Zaktualizuj plik" : "Zapisz plik"}
       </button>
       {isOffline && <p>You are offline. Changes are saved locally.</p>}
 
       {showPopup && (
         <div className="title-popup">
           <div className="title-popup-content">
-            <h3>Enter note title</h3>
+            <h3>Zmień tytuł</h3>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title"
+              placeholder="Tytuł"
             />
             <button
               onClick={() => {
@@ -130,7 +130,7 @@ const handleSaveClick = () => {
                 }
               }}
             >
-              Save
+              Zapisz
             </button>
           </div>
         </div>
