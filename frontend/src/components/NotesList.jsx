@@ -150,7 +150,7 @@ const NotesList = ({ searchTerm }) => {
                     <button onClick={() => setPopupNoteId(note.id)}>🔗 Udostępnij</button>
                   )}
                   <button onClick={() => handleDownload(note.id)}>📄 Pobierz</button>
-                  {note.permission >= 1 && (
+                  {note.permission == 3 && (
                     <button onClick={() => handleDelete(note.id)}>🗑️ Usuń</button>
                   )}
                 </div>
