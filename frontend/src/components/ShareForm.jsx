@@ -88,7 +88,7 @@ const TagForm = ({ noteId, onSave, userId }) => {
       note_id: noteId,
       category_id: selectedCategory || 0,
       category_permission: categoryPermission,
-      user_id: selectedUser ? String(selectedUser.id) : "0",
+      user_id: selectedUser ? String(selectedUser.id) : "",
       user_permission: userPermission,
     };
 
