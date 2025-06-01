@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
+import { ApiCall } from "../auth/ApiHandler";
 
 const CategoriesList = ({ searchTerm }) => {
   const [categories, setCategories] = useState([]);
@@ -11,8 +12,12 @@ const CategoriesList = ({ searchTerm }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("http://localhost:5000/categories");
-        const data = await response.json();
+        const data = await ApiCall({
+          method: "GET",
+          url: `/categories`,
+        })
+        // const response = await fetch("http://localhost:5000/categories");
+        // const data = await response.json();
         if (Array.isArray(data)) {
           setCategories(data);
         }
@@ -38,14 +43,19 @@ const CategoriesList = ({ searchTerm }) => {
   // Zapis nowej nazwy kategorii do backendu (dopasowany do /category/{id})
   const handleSaveCategoryName = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/category/${popupCategoryId}`, {
-        method: "PUT", // Musisz mieć taki endpoint w FastAPI!
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: categoryName }),
-      });
-      const resCategory = await response.json();
+      const resCategory = await ApiCall({
+        method: "PUT",
+        url: `/category/${popupCategoryId}`,
+        data: { name: categoryName },
+      })
+      // const response = await fetch(`http://localhost:5000/category/${popupCategoryId}`, {
+      //   method: "PUT", // Musisz mieć taki endpoint w FastAPI!
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ name: categoryName }),
+      // });
+      // const resCategory = await response.json();
 
       setCategories((prev) =>
         prev.map((category) =>
@@ -63,9 +73,13 @@ const CategoriesList = ({ searchTerm }) => {
   // Usuwanie kategorii (dopasowany do /category/{id})
   const handleDeleteCategory = async (id) => {
     try {
-      await fetch(`http://localhost:5000/category/${id}`, {
+      await ApiCall({
         method: "DELETE",
-      });
+        url: `/category/${id}`,
+      })
+      // await fetch(`http://localhost:5000/category/${id}`, {
+      //   method: "DELETE",
+      // });
 
       setCategories((prev) => prev.filter((category) => category.id !== id));
     } catch (error) {

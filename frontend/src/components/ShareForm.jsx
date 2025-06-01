@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { ApiCall } from "../auth/ApiHandler";
 
 const TagForm = ({ noteId, onSave, userId }) => {
   const [categories, setCategories] = useState([]);
@@ -13,8 +14,12 @@ const TagForm = ({ noteId, onSave, userId }) => {
     const fetchCategories = async () => {
       console.log("📦 Pobieranie kategorii...");
       try {
-        const response = await fetch("http://localhost:5000/categories");
-        const data = await response.json();
+        const data = await ApiCall({
+          method: "GET",
+          url: `/categories`,
+        })
+        // const response = await fetch("http://localhost:5000/categories");
+        // const data = await response.json();
         setCategories(data);
         console.log("✅ Kategorie pobrane:", data);
       } catch (error) {
@@ -29,14 +34,18 @@ const TagForm = ({ noteId, onSave, userId }) => {
       console.log(`🔍 Wyszukiwanie użytkowników dla: "${searchTerm}"`);
       const fetchUsers = async () => {
         try {
-          const effectiveUserId = userId ? userId : 0;
-          const response = await fetch(
-            `http://localhost:5000/users/some/${effectiveUserId}?prefix=${encodeURIComponent(searchTerm)}`
-          );
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const data = await response.json();
+          // const effectiveUserId = userId ? userId : 0;
+          const data = await ApiCall({
+            method: "GET",
+            url: `/users/except?prefix=${encodeURIComponent(searchTerm)}`,
+          })
+          // const response = await fetch(
+          //   `http://localhost:5000/users/some/${effectiveUserId}?prefix=${encodeURIComponent(searchTerm)}`
+          // );
+          // if (!response.ok) {
+          //   throw new Error(`HTTP error! status: ${response.status}`);
+          // }
+          // const data = await response.json();
           setUsers(data);
           console.log("✅ Użytkownicy znalezieni:", data);
         } catch (error) {

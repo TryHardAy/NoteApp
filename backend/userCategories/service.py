@@ -4,6 +4,7 @@ from sqlalchemy import select, delete, insert, case, literal
 from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException
 from core.models import t_UserCategories, Categories
+from users.service import is_user_admin
 
 
 
@@ -36,6 +37,7 @@ def remove_user_from_category(user_id: str, category_id: int, session: Session):
 
 
 def get_user_categories(user_id: str, session: Session) -> list[UserCategory]:
+
     stmt1 = select(Categories)
 
     try:
@@ -67,8 +69,11 @@ def get_user_categories(user_id: str, session: Session) -> list[UserCategory]:
 def update_user_categories(
     categories: list[UserCategory], 
     user_id: str, 
+    potential_admin_id: str,
     session: Session
     ):
+    if not is_user_admin(potential_admin_id, session):
+        raise HTTPException(status_code=403, detail="This user has no permission to get user categories")
     
     to_remove = []
     to_add = []

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
+import { ApiCall } from "../auth/ApiHandler";
 
 const UserList = ({ searchTerm, userId }) => {
   const [users, setUsers] = useState([]);
@@ -13,14 +14,18 @@ const UserList = ({ searchTerm, userId }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const url = `http://localhost:5000/users/some/${userId}?prefix=${searchTerm}`;
-        const response = await fetch(url);
+        const data = await ApiCall({
+          method: "GET",
+          url: `/users/except?prefix=${searchTerm}`,
+        })
+        // const url = `http://localhost:5000/users/some/${userId}?prefix=${searchTerm}`;
+        // const response = await fetch(url);
 
-        if (!response.ok) {
-          throw new Error("Nie udało się pobrać użytkowników");
-        }
+        // if (!response.ok) {
+        //   throw new Error("Nie udało się pobrać użytkowników");
+        // }
 
-        const data = await response.json();
+        // const data = await response.json();
         setUsers(data);
         setLoading(false);
       } catch (err) {
@@ -36,8 +41,12 @@ const UserList = ({ searchTerm, userId }) => {
 
   const openCategoryPopup = async (uid) => {
     try {
-      const res = await fetch(`http://localhost:5000/categories/user/${uid}`);
-      const data = await res.json();
+      const data = await ApiCall({
+        method: "GET",
+        url: `/categories/user/${uid}`,
+      })
+      // const res = await fetch(`http://localhost:5000/categories/user/${uid}`);
+      // const data = await res.json();
 
       setCategories(data);
       setActiveUserId(uid);
@@ -58,13 +67,18 @@ const UserList = ({ searchTerm, userId }) => {
 
   const handleSubmitCategories = async () => {
     try {
-      await fetch(`http://localhost:5000/categories/user/${activeUserId}`, {
+      await ApiCall({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(categories),
-      });
+        url: `/categories/user/${activeUserId}`,
+        data: categories,
+      })
+      // await fetch(`http://localhost:5000/categories/user/${activeUserId}`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(categories),
+      // });
 
       setPopupOpen(false);
       alert("Kategorie zaktualizowane!");

@@ -12,14 +12,5 @@ class UpsertUser(BaseModel):
 
 class User(UpsertUser):
     id: str
+    is_admin: bool = False
 
-
-# class KeycloakUserCreate(BaseModel):
-#     userId: str  # ID z tokena Keycloak
-#     firstName: str
-#     lastName: str
-#     email: str
-
-#     class Config:
-#         orm_mode = True
-#         from_attributes = True

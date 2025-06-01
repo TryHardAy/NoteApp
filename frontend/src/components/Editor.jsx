@@ -3,6 +3,8 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { ApiCall } from "../auth/ApiHandler";
+import { useUser } from "../auth/AuthProvider";
 
 const Editor = () => {
   const { id } = useParams();
@@ -12,26 +14,31 @@ const Editor = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isEditing, setIsEditing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [userId, setUserId] = useState(null);
+  // const [userId, setUserId] = useState(null);
+  const user = useUser();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) return;
 
-    try {
-      const decoded = jwtDecode(token);
-      setUserId(decoded.sub);
-    } catch (err) {
-      console.error("Błąd dekodowania tokenu:", err);
-    }
-  }, []);
+  //   try {
+  //     const decoded = jwtDecode(token);
+  //     setUserId(decoded.sub);
+  //   } catch (err) {
+  //     console.error("Błąd dekodowania tokenu:", err);
+  //   }
+  // }, []);
 
   useEffect(() => {
     const fetchNote = async () => {
-      if (!id || !userId) return;
+      if (!id) return;
       try {
-        const response = await fetch(`http://localhost:5000/note/${id}/${userId}`);
-        const data = await response.json();
+        const data = await ApiCall({
+          method: "GET",
+          url: `/note/${id}`,
+        })
+        // const response = await fetch(`/note/${id}`);
+        // const data = await response.json();
         if (data.content) {
           setContent(data.content);
           setTitle(data.title || "");
@@ -43,7 +50,7 @@ const Editor = () => {
     };
 
     fetchNote();
-  }, [id, userId]);
+  }, [id, user]);
 
   useEffect(() => {
     const handleOffline = () => setIsOffline(true);
@@ -69,28 +76,38 @@ const handleSaveClick = () => {
 };
 
   const saveNote = async () => {
-    if (!userId) {
-      console.error("Brak userId — użytkownik niezalogowany?");
-      return;
-    }
+    // if (!user) {
+    //   console.error("Brak user — użytkownik niezalogowany?", user);
+    //   return;
+    // }
 
     const payload = { title, content };
 
     try {
       if (isEditing) {
-        // Aktualizacja istniejącej notatki
-        await fetch(`http://localhost:5000/note/${id}/${userId}`, {
+        await ApiCall({
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+          url: `/note/${id}`,
+          data: payload,
+        })
+        // Aktualizacja istniejącej notatki
+        // await fetch(`/note/${id}`, {
+        //   method: "PUT",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify(payload),
+        // });
       } else {
         // Tworzenie nowej notatki
-        await fetch(`http://localhost:5000/note/create/${userId}`, {
+        await ApiCall({
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+          url: `/note/create/`,
+          data: payload,
+        })
+        // await fetch(`http://localhost:5000/note/create/${userId}`, {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify(payload),
+        // });
       }
 
       localStorage.removeItem("draftDocument");

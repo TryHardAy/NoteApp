@@ -3,34 +3,41 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { MoreVertical } from "lucide-react";
 import TagForm from "./ShareForm";
+import { useUser } from "../auth/AuthProvider";
+import { ApiCall } from "../auth/ApiHandler";
 
-const NotesList = ({ searchTerm }) => {
+const NotesList = () => {
   const [notes, setNotes] = useState([]);
   const [allCategories, setAllCategories] = useState([]); // tylko z has_user === true
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [menuOpen, setMenuOpen] = useState(null);
   const [popupNoteId, setPopupNoteId] = useState(null);
-  const [userId, setUserId] = useState(null);
+  // const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+  const { user, setUser } = useUser();
 
   // Ustal użytkownika
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) return;
 
-    const decodedToken = jwtDecode(token);
-    const uid = decodedToken.sub;
-    setUserId(uid);
-  }, []);
+  //   const decodedToken = jwtDecode(token);
+  //   const uid = decodedToken.sub;
+  //   // setUserId(uid);
+  // }, []);
 
   // Pobierz przypisane użytkownikowi kategorie (has_user === true)
   useEffect(() => {
     const fetchUserCategories = async () => {
-      if (!userId) return;
+      if (!user) return;
 
       try {
-        const response = await fetch(`http://localhost:5000/categories/user/${userId}`);
-        const data = await response.json();
+        const data = await ApiCall({
+          method: "GET",
+          url: `/categories/user/${user.id}`,
+        })
+        // const response = await fetch(`http://localhost:5000/categories/user/${userId}`);
+        // const data = await response.json();
         const assigned = data.filter((cat) => cat.has_user);
         setAllCategories(assigned);
         console.log("Przypisane kategorie:", assigned);
@@ -40,25 +47,27 @@ const NotesList = ({ searchTerm }) => {
     };
 
     fetchUserCategories();
-  }, [userId]);
+  }, [user]);
 
   // Pobierz notatki użytkownika i przypisz im przypisane kategorie
   useEffect(() => {
     const fetchNotes = async () => {
-      if (!userId) return;
-
       try {
-        const response = await fetch(`http://localhost:5000/notes/${userId}/${selectedCategory}`);
-        const notesData = await response.json();
-        console.log(selectedCategory);
-        console.log(`notki = ${notes}`)
+        const notesData = await ApiCall({
+          method: "GET",
+          url: `/notes/${selectedCategory}`,
+        })
+        // const response = await fetch(`http://localhost:5000/notes/${selectedCategory}`);
+        // const notesData = await response.json();
+        // console.log(selectedCategory);
+        // console.log(`notki = ${notes}`)
 
         // Wszystkim notatkom przypisz te same przypisane kategorie
         // const notesWithCategories = notesData.map((note) => ({
         //   ...note,
         //   categories: allCategories.map((cat) => cat.name),
         // }));
-
+        console.log("NOTKI: ", notesData);
         setNotes(notesData);
       } catch (error) {
         console.error("Błąd podczas pobierania notatek:", error);
@@ -66,21 +75,25 @@ const NotesList = ({ searchTerm }) => {
     };
 
     fetchNotes();
-  }, [userId, allCategories, selectedCategory, popupNoteId]);
+  }, [user, allCategories, selectedCategory, popupNoteId]);
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/note/${id}/${userId}`, {
+      const data = await ApiCall({
         method: "DELETE",
-      });
+        url: `/note/${id}`,
+      })
+      // const response = await fetch(`http://localhost:5000/note/${id}`, {
+      //   method: "DELETE",
+      // });
 
-      const data = await response.json();
+      // const data = await response.json();
 
-      if (response.ok) {
+      // if (response.ok) {
         setNotes(notes.filter((note) => note.id !== id));
-      } else {
-        console.error("Błąd podczas usuwania notatki:", data);
-      }
+      // } else {
+      //   console.error("Błąd podczas usuwania notatki:", data);
+      // }
     } catch (error) {
       console.error("Błąd podczas usuwania notatki:", error);
     }
@@ -88,8 +101,12 @@ const NotesList = ({ searchTerm }) => {
 
   const handleDownload = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/note/${id}`);
-      const note = await response.json();
+      const note = await ApiCall({
+        method: "GET",
+        url: `/note/${id}`,
+      })
+      // const response = await fetch(`http://localhost:5000/note/${id}`);
+      // const note = await response.json();
 
       const blob = new Blob([note.content], { type: "text/html" });
       const url = window.URL.createObjectURL(blob);
@@ -174,7 +191,7 @@ const NotesList = ({ searchTerm }) => {
       {popupNoteId && (
         <div className="popup-overlay">
           <div className="popup">
-            <TagForm noteId={popupNoteId} onSave={() => setPopupNoteId(null)} userId={userId} />
+            <TagForm noteId={popupNoteId} onSave={() => setPopupNoteId(null)} userId={user.id} />
             <button className="close-btn" onClick={() => setPopupNoteId(null)}>
               Zamknij
             </button>

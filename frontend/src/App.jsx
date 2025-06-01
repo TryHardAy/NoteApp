@@ -12,74 +12,76 @@ import UserMenu from "./components/UserMenu";
 import Form from "./components/CategoryForm";
 import UserForm from "./components/UserForm";
 import NotesList from "./components/NotesList";
-import Keycloak from "keycloak-js";
+// import Keycloak from "keycloak-js";
 //import TagForm from "./components/ShareForm";
 //import { useState } from "react";
 import Profile from "./components/Profile";
 import UserList from "./components/UserList";
 import CategoriesList from "./components/CategoryList";
+import { ApiCall } from "./auth/ApiHandler";
+import { useUser } from "./auth/AuthProvider";
+
 
 function App() {
   //const { isAuthenticated, user, loginWithRedirect, logout, isLoading, getAccessTokenSilently } = useAuth0();
   //const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [userId, setUserId] = useState(null);
-  const [keycloak, setKeycloak] = useState(null);
-  const [userInfo, setUserInfo] = useState(null); // <-- nowy stan
+  // const [userId, setUserId] = useState(null);
+  // const [keycloak, setKeycloak] = useState(null);
+  // const [userInfo, setUserInfo] = useState(null); // <-- nowy stan
+  const { user, setUser } = useUser();
 
-  
+  // useEffect(() => {
+  //   const storedKC = localStorage.getItem("keycloak");
+  //   const val = JSON.parse(storedKC) ? storedKC : null;
 
-  useEffect(() => {
-    const storedKC = localStorage.getItem("keycloak");
-    const val = JSON.parse(storedKC) ? storedKC : null;
+  //   if (val === null) {
+  //     setKeycloak(new Keycloak({
+  //       url: "http://localhost:8080",
+  //       realm: "NoteAppRealm",
+  //       clientId: "client",
+  //     }));
+  //   }
+  //   else setKeycloak(val);
+  // }, []);
 
-    if (val === null) {
-      setKeycloak(new Keycloak({
-        url: "http://localhost:8080",
-        realm: "NoteAppRealm",
-        clientId: "client",
-      }));
-    }
-    else setKeycloak(val);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("keycloak", JSON.stringify(keycloak));
+//   useEffect(() => {
+//     localStorage.setItem("keycloak", JSON.stringify(keycloak));
   
-    if (keycloak === null) return;
-    if (keycloak.authenticated) return;
+//     if (keycloak === null) return;
+//     if (keycloak.authenticated) return;
   
-    keycloak.init({ onLoad: 'login-required' }).then(async authenticated => {
-      if (authenticated) {
-        console.log("Authenticated!", keycloak.token);
-        console.log("Authenticated = ", authenticated);
-        localStorage.setItem("token", keycloak.token);
+//     keycloak.init({ onLoad: 'login-required' }).then(async authenticated => {
+//       if (authenticated) {
+//         console.log("Authenticated!", keycloak.token);
+//         console.log("Authenticated = ", authenticated);
+//         localStorage.setItem("token", keycloak.token);
   
-        // 🔹 WYCIĄGANIE DANYCH Z TOKENA
-        const user = keycloak.tokenParsed;
-        const mappedUser = {
-        firstName: user.given_name,
-        lastName: user.family_name,
-        email: user.email,
-};
-setUserInfo(mappedUser);
-        console.log("Dane użytkownika z tokena:", user);
+//         // 🔹 WYCIĄGANIE DANYCH Z TOKENA
+//         const user = keycloak.tokenParsed;
+//         const mappedUser = {
+//         firstName: user.given_name,
+//         lastName: user.family_name,
+//         email: user.email,
+// };
+// setUserInfo(mappedUser);
+//         console.log("Dane użytkownika z tokena:", user);
         
-        setUserInfo(user); // <- zapisujemy do stanu
+//         setUserInfo(user); // <- zapisujemy do stanu
         
-        // 🔹 LOGOWANIE PO STRONIE BACKENDU
-        const response = await fetch(`http://localhost:5000/user/login/${keycloak.token}`, {
-          method: "GET",
-          headers: {  
-            "Content-Type": "application/json" 
-          },
-        });
+//         // 🔹 LOGOWANIE PO STRONIE BACKENDU
+//         const response = await fetch(`http://localhost:5000/user/login/${keycloak.token}`, {
+//           method: "GET",
+//           headers: {  
+//             "Content-Type": "application/json" 
+//           },
+//         });
   
-        const data = await response.json(); // <- poprawka: await json()
-        setUserId(data.id); // <- zakładamy, że backend zwraca { id: ... }
-      }
-    });
-  }, [keycloak]);
+//         const data = await response.json(); // <- poprawka: await json()
+//         setUserId(data.id); // <- zakładamy, że backend zwraca { id: ... }
+//       }
+//     });
+//   }, [keycloak]);
   
  /* useEffect(() => {
     //console.log("Keycloak instance:", keycloak.authenticated);
@@ -91,48 +93,54 @@ setUserInfo(mappedUser);
   const handleSearchChange = (term) => {
     setSearchTerm(term);
   };
-  console.log("Keycloak instance:", keycloak);
+  // console.log("Keycloak instance:", keycloak);
   const [isDragging, setIsDragging] = useState(false);
   const [notes, setNotes] = useState([]); // Dodanie stanu notes
   //if (keycloak === null) {
   // return <div>Loading...</div>;
   //}
 
-   // Funkcja do pobierania notatek
-   const fetchNotes = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/notes/1");
-      if (response.ok) {
-        const notesData = await response.json();
-        setNotes(notesData); // Aktualizuj stan notatek
-      } else {
-        console.error("Błąd pobierania notatek");
-      }
-    } catch (error) {
-      console.error("Błąd:", error);
-    }
-  };
+  // Funkcja do pobierania notatek
+  // const fetchNotes = async () => {
+  //   try {
+  //     const response = await fetch("http://localhost:5000/notes/1");
+  //     if (response.ok) {
+  //       const notesData = await response.json();
+  //       setNotes(notesData); // Aktualizuj stan notatek
+  //     } else {
+  //       console.error("Błąd pobierania notatek");
+  //     }
+  //   } catch (error) {
+  //     console.error("Błąd:", error);
+  //   }
+  // };
 
   // Funkcja do dodania nowej notatki
   const uploadNote = async ({ title, content }) => {
     try {
-      const userId = 1; // lub dynamicznie z Auth0
+      // const userId = 1; // lub dynamicznie z Auth0
 
-      const response = await fetch(`http://localhost:5000/note/create/${userId}`, {
+      await ApiCall({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ title, content }),
-      });
+        url: '/note/create',
+        data: { title, content },
+      })
 
-      if (!response.ok) {
-        console.error("Błąd podczas zapisu notatki");
-      } else {
-        console.log("Notatka zapisana");
-        //fetchNotes();
-        window.location.reload();
-      }
+      // const response = await fetch(`http://localhost:5000/note/create/${userId}`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ title, content }),
+      // });
+
+      // if (!response.ok) {
+      //   console.error("Błąd podczas zapisu notatki");
+      // } else {
+      console.log("Notatka zapisana");
+      //fetchNotes();
+      window.location.reload();
+      // }
     } catch (error) {
       console.error("Błąd przy pobieraniu tokena lub zapisie notatki:", error);
     }
@@ -203,23 +211,22 @@ setUserInfo(mappedUser);
     await uploadNote({ title, content: text });
   };
   
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/users");
-      if (response.ok) {
-        const users = await response.json();
-        console.log(users);
-      } else {
-        console.error("Error fetching users");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };  
+  // const fetchUsers = async () => {
+  //   try {
+  //     const response = await fetch("http://localhost:5000/users");
+  //     if (response.ok) {
+  //       const users = await response.json();
+  //       console.log(users);
+  //     } else {
+  //       console.error("Error fetching users");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //   }
+  // };  
   
 
-  return (<>{keycloak === null ?(<div>Loading...</div>)
-  : (
+  return (
     <Router>
       <Routes>
         <Route
@@ -244,12 +251,12 @@ setUserInfo(mappedUser);
                   <NotesList
                     searchTerm={searchTerm}
                     notes={notes}
-                    fetchNotes={fetchNotes} // Przekazanie notes i fetchNotes do NotesList
+                    // fetchNotes={fetchNotes} // Przekazanie notes i fetchNotes do NotesList
                   />
                 </div>
 
                 <div className="profile">
-                  <Profile userData={userInfo} kc={keycloak} />
+                  <Profile userData={user}/>
                 </div>
               </div>
             </div>
@@ -264,8 +271,7 @@ setUserInfo(mappedUser);
                   <Menu />
                   <Editor />
                   <div className="profile">
-                    {<Profile userData={userInfo} kc = { keycloak }
-                    />}
+                    {<Profile userData={user}/>}
                   </div>
                 </div>
             </div>
@@ -280,32 +286,30 @@ setUserInfo(mappedUser);
                   <Editor />
                   
                   <div className="profile">
-                    {<Profile userData={userInfo} kc = { keycloak }
-                    />}
+                    {<Profile userData={user}/>}
                   </div>
                 </div>
             </div>
           }
         />
-
-<Route
-  path="/users" 
-  element={
-    <div>
-      <div className="large-white-box">
-        <Menu />
-        <UserMenu />
-        <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-        <div className="notes-container">
-          <UserList searchTerm={searchTerm} userId={userId} />
-        </div>
-        <div className="profile">
-          <Profile userData={userInfo} kc={keycloak} />
-        </div>
-      </div>
-    </div>
-  }
-/>
+        <Route
+          path="/users" 
+          element={
+            <div>
+              <div className="large-white-box">
+                <Menu />
+                <UserMenu />
+                <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+                <div className="notes-container">
+                  <UserList searchTerm={searchTerm} userId={user?.id} />
+                </div>
+                <div className="profile">
+                  <Profile userData={user}/>
+                </div>
+              </div>
+            </div>
+          }
+        />
         <Route
           path="/NewUser" 
           element={
@@ -315,8 +319,7 @@ setUserInfo(mappedUser);
                     <UserMenu/>
                     <UserForm/>
                   <div className="profile">
-                    {<Profile userData={userInfo} kc = { keycloak }
-                    />}
+                    {<Profile userData={user}/>}
                   </div>
                 </div>
             </div>
@@ -331,35 +334,31 @@ setUserInfo(mappedUser);
                     <UserMenu/>
                     <Form/>
                   <div className="profile">
-                    {<Profile userData={userInfo} kc = { keycloak }
-                    />}
+                    {<Profile userData={user}/>}
                   </div>
                 </div>
             </div>
           }
         />
         <Route
-  path="/categoryList"
-  element={
-    <div>
-      <div className="large-white-box">
-        <Menu />
-        <UserMenu />
-        <CategoriesList />
-        <div className="profile">
-          <Profile userData={userInfo} kc={keycloak} />
-        </div>
-      </div>
-    </div>
-  }
-/>
-
+          path="/categoryList"
+          element={
+            <div>
+              <div className="large-white-box">
+                <Menu />
+                <UserMenu />
+                <CategoriesList />
+                <div className="profile">
+                  <Profile userData={user}/>
+                </div>
+              </div>
+            </div>
+          }
+        />
       </Routes>
       
     </Router>
-  )}
-    </>
-  );
+  )
 }
 
 export default App;

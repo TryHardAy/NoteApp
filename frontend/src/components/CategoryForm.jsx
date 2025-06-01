@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ApiCall } from '../auth/ApiHandler';
 
 const CategoryForm = () => {
   const [inputValue, setInputValue] = useState('');
@@ -11,23 +12,28 @@ const CategoryForm = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/category/create', {  // Upewnij się, że adres URL jest poprawny
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(category),
-      });
+      const result = await ApiCall({
+        method: "POST",
+        url: `/category/create`,
+        data: category,
+      })
+      // const response = await fetch('http://localhost:5000/category/create', {  // Upewnij się, że adres URL jest poprawny
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(category),
+      // });
 
-      if (response.ok) {
-        const result = await response.json();
+      // if (response.ok) {
+      //   const result = await response.json();
         console.log(result);
         // Po poprawnym zapisie nie pokazujemy alertu, tylko resetujemy formularz
         setInputValue('');
-      } else {
-        console.error("Błąd przy zapisie kategorii");
-        alert("Błąd przy zapisie kategorii");
-      }
+      // } else {
+      //   console.error("Błąd przy zapisie kategorii");
+      //   alert("Błąd przy zapisie kategorii");
+      // }
     } catch (error) {
       console.error("Wystąpił błąd:", error);
       alert("Wystąpił błąd");

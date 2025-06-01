@@ -11,6 +11,11 @@ services:
     stdin_open: true
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_BACKEND_URL=http://localhost:5000
+      - REACT_APP_KEYCLOAK_URL=http://localhost:8080
+      - REACT_APP_KEYCLOAK_REALM=NoteAppRealm
+      - REACT_APP_KEYCLOAK_CLIENT=client
+      # - VITE_PUBLIC_HOST=frontend.graybush-23640f2b.polandcentral.azurecontainerapps.io
     depends_on:
       - backend
   
@@ -50,6 +55,10 @@ services:
       - MYSQL_USER=root
       - MYSQL_PASSWORD=password
       - MYSQL_DATABASE=NotesDB
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=NoteAppRealm
+      - KEYCLOAK_CLIENT=client
+      # - KEYCLOAK_CLIENT_SECRET=RKBbNZjZsV3CDf64sTqZzePGCySQTHZK
     ports:
       - "5000:5000"
     depends_on:
