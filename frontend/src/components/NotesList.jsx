@@ -6,7 +6,7 @@ import TagForm from "./ShareForm";
 import { useUser } from "../auth/AuthProvider";
 import { ApiCall } from "../auth/ApiHandler";
 
-const NotesList = () => {
+const NotesList = ({ searchTerm }) => {
   const [notes, setNotes] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(0);
@@ -39,7 +39,7 @@ const NotesList = () => {
       try {
         const notesData = await ApiCall({
           method: "GET",
-          url: `/notes/${selectedCategory}`,
+          url: `/notes/${selectedCategory}?prefix=${encodeURIComponent(searchTerm)}`,
         });
 
         setNotes(notesData);
@@ -49,7 +49,7 @@ const NotesList = () => {
     };
 
     fetchNotes();
-  }, [user, allCategories, selectedCategory, popupNoteId]);
+  }, [user, allCategories, selectedCategory, popupNoteId, searchTerm]);
 
   const handleDelete = async (id) => {
     const note = notes.find((n) => n.id === id);
