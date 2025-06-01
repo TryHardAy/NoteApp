@@ -94,20 +94,23 @@ const TagForm = ({ noteId, onSave, userId }) => {
       return;
     }
 
-    const formData = new URLSearchParams();
-    formData.append("note_id", noteId);
-    formData.append("category_id", selectedCategory || "");
-    formData.append("category_permission", categoryPermission);
-    formData.append("user_id", selectedUser ? selectedUser.id : "");
-    formData.append("user_permission", userPermission);
+    const payload = {
+      note_id: noteId,
+      category_id: selectedCategory || null,
+      category_permission: categoryPermission,
+      user_id: selectedUser ? selectedUser.id : null,
+      user_permission: userPermission,
+    };
 
-    console.log("📤 Wysyłanie danych do /permission/add:", Object.fromEntries(formData.entries()));
+    console.log("📤 Wysyłanie danych do /permission/add:", payload);
 
     try {
       const response = await fetch(`http://localhost:5000/permission/add/${userId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString(),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
