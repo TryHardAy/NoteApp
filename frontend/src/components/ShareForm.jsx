@@ -3,12 +3,12 @@ import { ApiCall } from "../auth/ApiHandler";
 
 const TagForm = ({ noteId, onSave, userId }) => {
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [categoryPermission, setCategoryPermission] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState(0);
+  const [categoryPermission, setCategoryPermission] = useState(2);
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [userPermission, setUserPermission] = useState(1);
+  const [userPermission, setUserPermission] = useState(2);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -17,9 +17,7 @@ const TagForm = ({ noteId, onSave, userId }) => {
         const data = await ApiCall({
           method: "GET",
           url: `/categories`,
-        })
-        // const response = await fetch("http://localhost:5000/categories");
-        // const data = await response.json();
+        });
         setCategories(data);
         console.log("✅ Kategorie pobrane:", data);
       } catch (error) {
@@ -34,18 +32,10 @@ const TagForm = ({ noteId, onSave, userId }) => {
       console.log(`🔍 Wyszukiwanie użytkowników dla: "${searchTerm}"`);
       const fetchUsers = async () => {
         try {
-          // const effectiveUserId = userId ? userId : 0;
           const data = await ApiCall({
             method: "GET",
             url: `/users/except?prefix=${encodeURIComponent(searchTerm)}`,
-          })
-          // const response = await fetch(
-          //   `http://localhost:5000/users/some/${effectiveUserId}?prefix=${encodeURIComponent(searchTerm)}`
-          // );
-          // if (!response.ok) {
-          //   throw new Error(`HTTP error! status: ${response.status}`);
-          // }
-          // const data = await response.json();
+          });
           setUsers(data);
           console.log("✅ Użytkownicy znalezieni:", data);
         } catch (error) {
@@ -56,10 +46,10 @@ const TagForm = ({ noteId, onSave, userId }) => {
     } else {
       setUsers([]);
     }
-  }, [searchTerm, userId]);
+  }, [searchTerm]);
 
   const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
+    setSelectedCategory(Number(e.target.value));
     console.log("📁 Wybrano kategorię:", e.target.value);
   };
 
@@ -96,41 +86,40 @@ const TagForm = ({ noteId, onSave, userId }) => {
 
     const payload = {
       note_id: noteId,
-      category_id: selectedCategory || "",
+      category_id: selectedCategory || 0,
       category_permission: categoryPermission,
-      user_id: selectedUser ? selectedUser.id : "",
+      user_id: selectedUser ? String(selectedUser.id) : "0",
       user_permission: userPermission,
     };
 
-    console.log("📤 Wysyłanie danych do /permission/add:", payload);
+    console.log("📤 Payload do wysłania:", JSON.stringify(payload, null, 2));
 
     try {
       const result = await ApiCall({
         method: "PUT",
         url: `/permission/add`,
         data: payload,
-      })
-      // const response = await fetch(`http://localhost:5000/permission/add/${userId}`, {
-      //   method: "PUT",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(payload),
-      // });
+      });
 
-      // const result = await response.json();
       console.log("✅ Odpowiedź serwera:", result);
       onSave();
     } catch (error) {
       console.error("❌ Błąd podczas zapisywania:", error);
+      console.error("❌ Payload przy błędzie:", JSON.stringify(payload, null, 2));
+
+      if (error?.response?.data) {
+        console.error("📨 Odpowiedź serwera (błąd):", error.response.data);
+      }
+
       alert("Błąd podczas zapisywania danych!");
     }
 
-    setSelectedCategory("");
-    setCategoryPermission(1);
+    // Reset formularza
+    setSelectedCategory(0);
+    setCategoryPermission(2);
     setSearchTerm("");
     setSelectedUser(null);
-    setUserPermission(1);
+    setUserPermission(2);
   };
 
   return (
@@ -143,7 +132,7 @@ const TagForm = ({ noteId, onSave, userId }) => {
           value={selectedCategory}
           onChange={handleCategoryChange}
         >
-          <option value="">--Wybierz kategorię--</option>
+          <option value={-1}>--Wybierz kategorię--</option>
           {categories.map(({ id, name }) => (
             <option key={id} value={id}>
               {name}
@@ -182,7 +171,8 @@ const TagForm = ({ noteId, onSave, userId }) => {
                   onClick={() => handleUserSelect(user)}
                   style={{
                     cursor: "pointer",
-                    backgroundColor: selectedUser?.id === user.id ? "#ddd" : "transparent",
+                    backgroundColor:
+                      selectedUser?.id === user.id ? "#ddd" : "transparent",
                   }}
                 >
                   {user.name} {user.last_name} - {user.email}

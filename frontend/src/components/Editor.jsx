@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useParams, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import { ApiCall } from "../auth/ApiHandler";
 import { useUser } from "../auth/AuthProvider";
 
@@ -14,35 +13,26 @@ const Editor = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isEditing, setIsEditing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  // const [userId, setUserId] = useState(null);
+  const [permission, setPermission] = useState(-1);
   const user = useUser();
-
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) return;
-
-  //   try {
-  //     const decoded = jwtDecode(token);
-  //     setUserId(decoded.sub);
-  //   } catch (err) {
-  //     console.error("Błąd dekodowania tokenu:", err);
-  //   }
-  // }, []);
 
   useEffect(() => {
     const fetchNote = async () => {
-      if (!id) return;
+      if (!id) {
+        // nowa notatka, permission -1
+        setPermission(-1);
+        return;
+      }
       try {
         const data = await ApiCall({
           method: "GET",
           url: `/note/${id}`,
-        })
-        // const response = await fetch(`/note/${id}`);
-        // const data = await response.json();
+        });
         if (data.content) {
           setContent(data.content);
           setTitle(data.title || "");
           setIsEditing(true);
+          setPermission(data.permission ?? 0);
         }
       } catch (error) {
         console.error("Błąd podczas pobierania notatki:", error);
@@ -71,16 +61,11 @@ const Editor = () => {
     }
   }, [content, isOffline]);
 
-const handleSaveClick = () => {
-  setShowPopup(true); // zawsze pokazuj popup
-};
+  const handleSaveClick = () => {
+    setShowPopup(true); // pokaż popup tytułu
+  };
 
   const saveNote = async () => {
-    // if (!user) {
-    //   console.error("Brak user — użytkownik niezalogowany?", user);
-    //   return;
-    // }
-
     const payload = { title, content };
 
     try {
@@ -89,25 +74,13 @@ const handleSaveClick = () => {
           method: "PUT",
           url: `/note/${id}`,
           data: payload,
-        })
-        // Aktualizacja istniejącej notatki
-        // await fetch(`/note/${id}`, {
-        //   method: "PUT",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify(payload),
-        // });
+        });
       } else {
-        // Tworzenie nowej notatki
         await ApiCall({
           method: "POST",
           url: `/note/create/`,
           data: payload,
-        })
-        // await fetch(`http://localhost:5000/note/create/${userId}`, {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify(payload),
-        // });
+        });
       }
 
       localStorage.removeItem("draftDocument");
@@ -117,16 +90,28 @@ const handleSaveClick = () => {
     }
   };
 
+  const canEdit = permission === 2 || permission === 3;
+  const canSave = permission === -1;
+
   return (
     <div>
       <ReactQuill
         value={content}
         onChange={setContent}
         style={{ minHeight: "300px", padding: "10px" }}
+        readOnly={permission === 0 || permission === 1}
       />
-      <button onClick={handleSaveClick} disabled={isOffline}>
-        {isEditing ? "Zaktualizuj plik" : "Zapisz plik"}
-      </button>
+
+      {(canEdit || canSave) && (
+        <button onClick={handleSaveClick} disabled={isOffline}>
+          {canEdit ? "Zaktualizuj plik" : "Zapisz plik"}
+        </button>
+      )}
+
+      {(permission === 1) && (
+        <button onClick={() => navigate("/")}>Zamknij</button>
+      )}
+
       {isOffline && <p>You are offline. Changes are saved locally.</p>}
 
       {showPopup && (

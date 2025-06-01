@@ -12,19 +12,8 @@ const NotesList = () => {
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [menuOpen, setMenuOpen] = useState(null);
   const [popupNoteId, setPopupNoteId] = useState(null);
-  // const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
-  const { user, setUser } = useUser();
-
-  // Ustal użytkownika
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) return;
-
-  //   const decodedToken = jwtDecode(token);
-  //   const uid = decodedToken.sub;
-  //   // setUserId(uid);
-  // }, []);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchUserCategories = async () => {
@@ -34,9 +23,7 @@ const NotesList = () => {
         const data = await ApiCall({
           method: "GET",
           url: `/categories/user/${user.id}`,
-        })
-        // const response = await fetch(`http://localhost:5000/categories/user/${userId}`);
-        // const data = await response.json();
+        });
         const assigned = data.filter((cat) => cat.has_user);
         setAllCategories(assigned);
       } catch (error) {
@@ -53,17 +40,7 @@ const NotesList = () => {
         const notesData = await ApiCall({
           method: "GET",
           url: `/notes/${selectedCategory}`,
-        })
-        // const response = await fetch(`http://localhost:5000/notes/${userId}/${selectedCategory}`);
-        // const notesData = await response.json();
-        // console.log(selectedCategory);
-        // console.log(`notki = ${notes}`)
-
-        // Wszystkim notatkom przypisz te same przypisane kategorie
-        // const notesWithCategories = notesData.map((note) => ({
-        //   ...note,
-        //   categories: allCategories.map((cat) => cat.name),
-        // }));
+        });
 
         setNotes(notesData);
       } catch (error) {
@@ -82,21 +59,12 @@ const NotesList = () => {
     }
 
     try {
-      const data = await ApiCall({
+      await ApiCall({
         method: "DELETE",
         url: `/note/${id}`,
-      })
-      // const response = await fetch(`http://localhost:5000/note/${id}`, {
-      //   method: "DELETE",
-      // });
+      });
 
-      // const data = await response.json();
-
-      // if (response.ok) {
-        setNotes(notes.filter((note) => note.id !== id));
-      // } else {
-      //   console.error("Błąd podczas usuwania notatki:", data);
-      // }
+      setNotes(notes.filter((note) => note.id !== id));
     } catch (error) {
       console.error("Błąd podczas usuwania notatki:", error);
     }
@@ -113,9 +81,7 @@ const NotesList = () => {
       const note = await ApiCall({
         method: "GET",
         url: `/note/${id}`,
-      })
-      // const response = await fetch(`http://localhost:5000/note/${id}`);
-      // const note = await response.json();
+      });
 
       const blob = new Blob([note.content], { type: "text/html" });
       const url = window.URL.createObjectURL(blob);
@@ -136,7 +102,11 @@ const NotesList = () => {
 
   return (
     <div className="notes-list">
-      <select className = "category-select" onChange={handleCategoryChange} value={selectedCategory ?? ""}>
+      <select
+        className="category-select"
+        onChange={handleCategoryChange}
+        value={selectedCategory ?? ""}
+      >
         <option value="">Wszystkie kategorie</option>
         {allCategories.map((cat) => (
           <option key={cat.id} value={cat.id}>
@@ -144,19 +114,16 @@ const NotesList = () => {
           </option>
         ))}
       </select>
+
       {notes.length !== 0 &&
         notes.map((note) => (
           <div key={note.id} className="note-card">
             <p>{note.id}</p>
             <h3
               className="note-title"
-              style={{ cursor: note.permission > 1 ? "pointer" : "not-allowed" }}
+              style={{ cursor: "pointer" }}
               onClick={() => {
-                if (note.permission > 1) {
-                  navigate(`/editor/${note.id}`);
-                } else {
-                  alert("Brak uprawnień do edycji tej notatki.");
-                }
+                navigate(`/editor/${note.id}`);
               }}
             >
               <span className="note-owner">
@@ -195,9 +162,9 @@ const NotesList = () => {
       {popupNoteId && notes.find((n) => n.id === popupNoteId)?.permission > 1 && (
         <div className="popup-overlay">
           <div className="popup">
-            <TagForm 
-              noteId={popupNoteId} 
-              onSave={() => setPopupNoteId(null)} 
+            <TagForm
+              noteId={popupNoteId}
+              onSave={() => setPopupNoteId(null)}
               userId={user.id}
               permission={notes.find((n) => n.id === popupNoteId)?.permission}
             />

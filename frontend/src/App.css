@@ -134,7 +134,7 @@ body
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);  
   z-index: 999;                     /* Pod menu, ale nad innymi elementami */
   margin: 0 auto ;                   
-  max-width: 500px;                
+  max-width: 312px;                
   width: 100%;                     
 }
 
