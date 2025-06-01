@@ -96,24 +96,29 @@ const TagForm = ({ noteId, onSave, userId }) => {
 
     const payload = {
       note_id: noteId,
-      category_id: selectedCategory || null,
+      category_id: selectedCategory || "",
       category_permission: categoryPermission,
-      user_id: selectedUser ? selectedUser.id : null,
+      user_id: selectedUser ? selectedUser.id : "",
       user_permission: userPermission,
     };
 
     console.log("📤 Wysyłanie danych do /permission/add:", payload);
 
     try {
-      const response = await fetch(`http://localhost:5000/permission/add/${userId}`, {
+      const result = await ApiCall({
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+        url: `/permission/add`,
+        data: payload,
+      })
+      // const response = await fetch(`http://localhost:5000/permission/add/${userId}`, {
+      //   method: "PUT",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
 
-      const result = await response.json();
+      // const result = await response.json();
       console.log("✅ Odpowiedź serwera:", result);
       onSave();
     } catch (error) {
