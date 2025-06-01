@@ -63,4 +63,3 @@ def receive_after_flush(session: Session, flush_context):
 def receive_after_commit(session: Session):
     session.info["was_flushed"] = False
     session.info["has_changes"] = False
-

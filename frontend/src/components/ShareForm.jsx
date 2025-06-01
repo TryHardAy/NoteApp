@@ -1,124 +1,125 @@
 import React, { useState, useEffect } from "react";
+import { ApiCall } from "../auth/ApiHandler";
 
 const TagForm = ({ noteId, onSave, userId }) => {
-  const [categories, setCategories] = useState([]); // Lista kategorii
-  const [selectedCategory, setSelectedCategory] = useState(""); // Wybrana kategoria
-  const [categoryPermission, setCategoryPermission] = useState(1); // Uprawnienia kategorii
-  const [searchTerm, setSearchTerm] = useState(""); // Wyszukiwany termin dla użytkowników
-  const [users, setUsers] = useState([]); // Lista użytkowników
-  const [selectedUser, setSelectedUser] = useState(null); // Wybrany użytkownik
-  const [userPermission, setUserPermission] = useState(1); // Uprawnienia użytkownika
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(0);
+  const [categoryPermission, setCategoryPermission] = useState(2);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userPermission, setUserPermission] = useState(2);
 
-  // Pobieranie kategorii z backendu
   useEffect(() => {
     const fetchCategories = async () => {
+      console.log("📦 Pobieranie kategorii...");
       try {
-        const response = await fetch("http://localhost:5000/categories");
-        const data = await response.json();
-        setCategories(data); // Zakładając, że backend zwraca [{ id, name }, ...]
+        const data = await ApiCall({
+          method: "GET",
+          url: `/categories`,
+        });
+        setCategories(data);
+        console.log("✅ Kategorie pobrane:", data);
       } catch (error) {
-        console.error("Błąd podczas pobierania kategorii:", error);
+        console.error("❌ Błąd podczas pobierania kategorii:", error);
       }
     };
-
     fetchCategories();
   }, []);
 
-  // Pobieranie użytkowników na podstawie wpisywanego tekstu
   useEffect(() => {
     if (searchTerm.length > 0) {
+      console.log(`🔍 Wyszukiwanie użytkowników dla: "${searchTerm}"`);
       const fetchUsers = async () => {
         try {
-          const effectiveUserId = userId ? userId : 0;
-          const response = await fetch(
-            `http://localhost:5000/users/some/${effectiveUserId}?prefix=${encodeURIComponent(searchTerm)}`
-          );
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const data = await response.json();
-          setUsers(data); // Lista użytkowników pasujących do wyszukiwanego terminu
+          const data = await ApiCall({
+            method: "GET",
+            url: `/users/except?prefix=${encodeURIComponent(searchTerm)}`,
+          });
+          setUsers(data);
+          console.log("✅ Użytkownicy znalezieni:", data);
         } catch (error) {
-          console.error("Błąd podczas pobierania użytkowników:", error);
+          console.error("❌ Błąd podczas pobierania użytkowników:", error);
         }
       };
-
       fetchUsers();
     } else {
-      setUsers([]); // Jeśli pole jest puste, nie pokazuj wyników wyszukiwania
+      setUsers([]);
     }
-  }, [searchTerm, userId]);
+  }, [searchTerm]);
 
-  // Obsługa zmiany kategorii
   const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
+    setSelectedCategory(Number(e.target.value));
+    console.log("📁 Wybrano kategorię:", e.target.value);
   };
 
-  // Obsługa zmiany uprawnień kategorii
   const handlePermissionChange = (e) => {
-    setCategoryPermission(parseInt(e.target.value, 10));
+    const value = parseInt(e.target.value, 10);
+    setCategoryPermission(value);
+    console.log("🔒 Uprawnienia do kategorii:", value);
   };
 
-  // Obsługa zmiany wyszukiwanego terminu
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  // Obsługa wyboru użytkownika z listy
   const handleUserSelect = (user) => {
     setSelectedUser(user);
-    setSearchTerm(""); // Czyścimy pole wyszukiwania
-    setUsers([]); // Usuwamy wyniki wyszukiwania – wybrany użytkownik będzie widoczny osobno
+    setSearchTerm("");
+    setUsers([]);
+    console.log("👤 Wybrano użytkownika:", user);
   };
 
-  // Obsługa zmiany uprawnień użytkownika
   const handleUserPermissionChange = (e) => {
-    setUserPermission(parseInt(e.target.value, 10));
+    const value = parseInt(e.target.value, 10);
+    setUserPermission(value);
+    console.log("🔒 Uprawnienia dla użytkownika:", value);
   };
 
-  // Obsługa wysłania formularza
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedCategory && !selectedUser) {
-      alert("Proszę wybrać przynajmniej kategorię lub użytkownika");
+    if (!userId) {
+      alert("Brak ID użytkownika – zaloguj się ponownie.");
       return;
     }
 
-    // Budowanie form data warunkowo – dodajemy klucze tylko, gdy mają wartość
-    const formData = new URLSearchParams();
-    formData.append("note_id", noteId);
-    if (selectedCategory) {
-      formData.append("category_id", parseInt(selectedCategory, 10));
-      formData.append("category_permission", categoryPermission);
-    }
-    if (selectedUser) {
-      formData.append("user_id", selectedUser.id);
-      formData.append("user_permission", userPermission);
-    }
+    const payload = {
+      note_id: noteId,
+      category_id: selectedCategory || 0,
+      category_permission: categoryPermission,
+      user_id: selectedUser ? String(selectedUser.id) : "",
+      user_permission: userPermission,
+    };
+
+    console.log("📤 Payload do wysłania:", JSON.stringify(payload, null, 2));
 
     try {
-      const response = await fetch("http://localhost:5000/permission/add", {
+      const result = await ApiCall({
         method: "PUT",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString(),
+        url: `/permission/add`,
+        data: payload,
       });
 
-      const result = await response.json();
-      console.log("Odpowiedź serwera:", result);
-      // Zmiana: Usunięto alert przy sukcesie oraz dodano wywołanie onSave() w celu zamknięcia popupu.
-      onSave(); 
+      console.log("✅ Odpowiedź serwera:", result);
+      onSave();
     } catch (error) {
-      console.error("Błąd podczas zapisywania:", error);
+      console.error("❌ Błąd podczas zapisywania:", error);
+      console.error("❌ Payload przy błędzie:", JSON.stringify(payload, null, 2));
+
+      if (error?.response?.data) {
+        console.error("📨 Odpowiedź serwera (błąd):", error.response.data);
+      }
+
       alert("Błąd podczas zapisywania danych!");
     }
 
-    // Resetowanie formularza
-    setSelectedCategory("");
-    setCategoryPermission(1);
+    // Reset formularza
+    setSelectedCategory(0);
+    setCategoryPermission(2);
     setSearchTerm("");
     setSelectedUser(null);
-    setUserPermission(1);
+    setUserPermission(2);
   };
 
   return (
@@ -131,7 +132,7 @@ const TagForm = ({ noteId, onSave, userId }) => {
           value={selectedCategory}
           onChange={handleCategoryChange}
         >
-          <option value="">--Wybierz kategorię--</option>
+          <option value={-1}>--Wybierz kategorię--</option>
           {categories.map(({ id, name }) => (
             <option key={id} value={id}>
               {name}
@@ -140,14 +141,14 @@ const TagForm = ({ noteId, onSave, userId }) => {
         </select>
         <br />
 
-        <label htmlFor="category-permission">Wybierz uprawnienia do kategorii:</label>
+        <label htmlFor="category-permission">Uprawnienia kategorii:</label>
         <select
           id="category-permission"
           value={categoryPermission}
           onChange={handlePermissionChange}
         >
-          <option value={1}>Pełne uprawnienia</option>
-          <option value={0}>Tylko odczyt</option>
+          <option value={2}>Pełne uprawnienia</option>
+          <option value={1}>Tylko odczyt</option>
         </select>
         <br />
 
@@ -157,11 +158,10 @@ const TagForm = ({ noteId, onSave, userId }) => {
           id="user-search"
           value={searchTerm}
           onChange={handleSearchChange}
-          placeholder="Wyszukaj po imieniu lub nazwisku"
+          placeholder="Imię lub nazwisko"
         />
         <br />
 
-        {/* Wyświetlanie wyników wyszukiwania */}
         {users.length > 0 && (
           <div className="user-results">
             <ul>
@@ -171,7 +171,8 @@ const TagForm = ({ noteId, onSave, userId }) => {
                   onClick={() => handleUserSelect(user)}
                   style={{
                     cursor: "pointer",
-                    backgroundColor: selectedUser?.id === user.id ? "#ddd" : "transparent",
+                    backgroundColor:
+                      selectedUser?.id === user.id ? "#ddd" : "transparent",
                   }}
                 >
                   {user.name} {user.last_name} - {user.email}
@@ -181,13 +182,12 @@ const TagForm = ({ noteId, onSave, userId }) => {
           </div>
         )}
 
-        {/* Wyświetlenie wybranego użytkownika, który pozostaje widoczny */}
         {selectedUser && (
           <div className="selected-user">
             <p>
               Wybrany użytkownik: {selectedUser.name} {selectedUser.last_name} - {selectedUser.email}
             </p>
-            <label htmlFor="user-permission">Wybierz uprawnienia dla użytkownika:</label>
+            <label htmlFor="user-permission">Uprawnienia użytkownika:</label>
             <select
               id="user-permission"
               value={userPermission}

@@ -1,131 +1,9 @@
-// import React, { useEffect, useState } from "react";
-// import ReactQuill from "react-quill";
-// import "react-quill/dist/quill.snow.css";
-// import { useParams, useNavigate } from "react-router-dom";
-
-// const Editor = () => {
-//   const { id } = useParams();
-//   const navigate = useNavigate();
-//   const [content, setContent] = useState("");
-//   const [title, setTitle] = useState("");
-//   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-//   const [isEditing, setIsEditing] = useState(false);
-//   const [showPopup, setShowPopup] = useState(false);
-
-//   useEffect(() => {
-//     const fetchNote = async () => {
-//       if (!id) return;
-//       try {
-//         const response = await fetch(`http://localhost:5000/note/${id}`);
-//         const data = await response.json();
-//         if (data.content) {
-//           setContent(data.content);
-//           setTitle(data.title || "");
-//           setIsEditing(true);
-//         }
-//       } catch (error) {
-//         console.error("Błąd podczas pobierania notatki:", error);
-//       }
-//     };
-
-//     fetchNote();
-//   }, [id]);
-
-//   useEffect(() => {
-//     const handleOffline = () => setIsOffline(true);
-//     const handleOnline = () => setIsOffline(false);
-
-//     window.addEventListener("offline", handleOffline);
-//     window.addEventListener("online", handleOnline);
-
-//     return () => {
-//       window.removeEventListener("offline", handleOffline);
-//       window.removeEventListener("online", handleOnline);
-//     };
-//   }, []);
-
-//   useEffect(() => {
-//     if (isOffline) {
-//       localStorage.setItem("draftDocument", content);
-//     }
-//   }, [content, isOffline]);
-
-//   const handleSaveClick = () => {
-//     if (!title) {
-//       setShowPopup(true);
-//     } else {
-//       saveNote();
-//     }
-//   };
-
-//   const saveNote = async () => {
-//     const payload = { title, content };
-//     try {
-//       if (isEditing) {
-//         await fetch(`http://localhost:5000/note/${id}`, {
-//           method: "PUT",
-//           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify(payload),
-//         });
-//       } else {
-//         await fetch("http://localhost:5000/note/create/1", {
-//           method: "POST",
-//           headers: { "Content-Type": "application/json" },
-//           body: JSON.stringify(payload),
-//         });
-//       }
-//       localStorage.removeItem("draftDocument");
-//       navigate("/");
-//     } catch (error) {
-//       console.error("Błąd podczas zapisu na serwer:", error);
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <ReactQuill
-//         value={content}
-//         onChange={setContent}
-//         style={{ minHeight: "300px", padding: "10px" }}
-//       />
-//       <button onClick={handleSaveClick} disabled={isOffline}>
-//         {isEditing ? "Update file" : "Save file"}
-//       </button>
-//       {isOffline && <p>You are offline. Changes are saved locally.</p>}
-      
-//       {showPopup && (
-//         <div className="title-popup">
-//           <div className="title-popup-content">
-//             <h3>Enter note title</h3>
-//             <input
-//               type="text"
-//               value={title}
-//               onChange={(e) => setTitle(e.target.value)}
-//               placeholder="Title"
-//             />
-//             <button onClick={() => {
-//               if (title) {
-//                 setShowPopup(false);
-//                 saveNote();
-//               }
-//             }}>Save</button>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Editor;
-
 import React, { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useParams, useNavigate } from "react-router-dom";
-import * as jwt_decode from "jwt-decode";
-import { jwtDecode } from "jwt-decode";
-
-
+import { ApiCall } from "../auth/ApiHandler";
+import { useUser } from "../auth/AuthProvider";
 
 const Editor = () => {
   const { id } = useParams();
@@ -135,17 +13,26 @@ const Editor = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [isEditing, setIsEditing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [permission, setPermission] = useState(-1);
+  const user = useUser();
 
   useEffect(() => {
     const fetchNote = async () => {
-      if (!id) return;
+      if (!id) {
+        // nowa notatka, permission -1
+        setPermission(-1);
+        return;
+      }
       try {
-        const response = await fetch(`http://localhost:5000/note/${id}`);
-        const data = await response.json();
+        const data = await ApiCall({
+          method: "GET",
+          url: `/note/${id}`,
+        });
         if (data.content) {
           setContent(data.content);
           setTitle(data.title || "");
           setIsEditing(true);
+          setPermission(data.permission ?? 0);
         }
       } catch (error) {
         console.error("Błąd podczas pobierania notatki:", error);
@@ -153,7 +40,7 @@ const Editor = () => {
     };
 
     fetchNote();
-  }, [id]);
+  }, [id, user]);
 
   useEffect(() => {
     const handleOffline = () => setIsOffline(true);
@@ -175,62 +62,36 @@ const Editor = () => {
   }, [content, isOffline]);
 
   const handleSaveClick = () => {
-    if (!title) {
-      setShowPopup(true);
-    } else {
-      saveNote();
-    }
+    setShowPopup(true); // pokaż popup tytułu
   };
 
   const saveNote = async () => {
     const payload = { title, content };
-    const token = localStorage.getItem("token");
-  
-    if (!token) {
-      console.error("Brak tokenu w localStorage");
-      return;
-    }
-  
+
     try {
-      const decodedToken = jwtDecode(token);
-      const userId = decodedToken.sub;
-  
-      if (!userId) {
-        console.error("Brak user_id w tokenie");
-        return;
-      }
-  
-      // Jeśli edytujesz notatkę
       if (isEditing) {
-        await fetch(`http://localhost:5000/note/${id}`, {
+        await ApiCall({
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          url: `/note/${id}`,
+          data: payload,
         });
       } else {
-        // Jeśli tworzysz nową notatkę
-        await fetch(`http://localhost:5000/note/create/${userId}`, {
+        await ApiCall({
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          url: `/note/create`,
+          data: payload,
         });
       }
-  
-      /*// Odświeżenie listy notatek po zapisaniu
-      const response = await fetch(`http://localhost:5000/notes/${userId}`);
-      const data = await response.json();
-      if (Array.isArray(data) && data.length > 0) {
-        setNotes(data);  // Uaktualnij stan notatek
-      }
-  
-      localStorage.removeItem("draftDocument");*/
+
+      localStorage.removeItem("draftDocument");
       navigate("/");
-  
     } catch (error) {
       console.error("Błąd podczas zapisu na serwer:", error);
     }
   };
-  
+
+  const canEdit = permission === 2 || permission === 3;
+  const canSave = permission === -1;
 
   return (
     <div>
@@ -238,28 +99,41 @@ const Editor = () => {
         value={content}
         onChange={setContent}
         style={{ minHeight: "300px", padding: "10px" }}
+        readOnly={permission === 0 || permission === 1}
       />
-      <button onClick={handleSaveClick} disabled={isOffline}>
-        {isEditing ? "Update file" : "Save file"}
-      </button>
+
+      {(canEdit || canSave) && (
+        <button onClick={handleSaveClick} disabled={isOffline}>
+          {canEdit ? "Zaktualizuj plik" : "Zapisz plik"}
+        </button>
+      )}
+
+      {(permission === 1) && (
+        <button onClick={() => navigate("/")}>Zamknij</button>
+      )}
+
       {isOffline && <p>You are offline. Changes are saved locally.</p>}
-      
+
       {showPopup && (
         <div className="title-popup">
           <div className="title-popup-content">
-            <h3>Enter note title</h3>
+            <h3>Zmień tytuł</h3>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title"
+              placeholder="Tytuł"
             />
-            <button onClick={() => {
-              if (title) {
-                setShowPopup(false);
-                saveNote();
-              }
-            }}>Save</button>
+            <button
+              onClick={() => {
+                if (title) {
+                  setShowPopup(false);
+                  saveNote();
+                }
+              }}
+            >
+              Zapisz
+            </button>
           </div>
         </div>
       )}

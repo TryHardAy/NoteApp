@@ -3,93 +3,85 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { MoreVertical } from "lucide-react";
 import TagForm from "./ShareForm";
+import { useUser } from "../auth/AuthProvider";
+import { ApiCall } from "../auth/ApiHandler";
 
 const NotesList = ({ searchTerm }) => {
   const [notes, setNotes] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(0);
   const [menuOpen, setMenuOpen] = useState(null);
   const [popupNoteId, setPopupNoteId] = useState(null);
   const navigate = useNavigate();
+  const { user } = useUser();
+
+  useEffect(() => {
+    const fetchUserCategories = async () => {
+      if (!user) return;
+
+      try {
+        const data = await ApiCall({
+          method: "GET",
+          url: `/categories/user/${user.id}`,
+        });
+        const assigned = data.filter((cat) => cat.has_user);
+        setAllCategories(assigned);
+      } catch (error) {
+        console.error("Błąd przy pobieraniu kategorii użytkownika:", error);
+      }
+    };
+
+    fetchUserCategories();
+  }, [user]);
 
   useEffect(() => {
     const fetchNotes = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
       try {
-        const decodedToken = jwtDecode(token);
-        const userId = decodedToken.sub;
-
-        if (!userId) {
-          console.error("Brak userId w tokenie");
-          return;
-        }
-
-        const response = await fetch(`http://localhost:5000/notes/${userId}`);
-        const notesData = await response.json();
-
-        const categoriesResponse = await fetch("http://localhost:5000/categories");
-        const categoriesData = await categoriesResponse.json();
-
-        const notesWithCategories = notesData.map((note) => {
-          const categories = categoriesData
-            .filter((category) => category.note_id === note.id)
-            .map((category) => category.categories.split(","));
-
-          return {
-            ...note,
-            categories: categories.flat(),
-          };
+        const notesData = await ApiCall({
+          method: "GET",
+          url: `/notes/${selectedCategory}?prefix=${encodeURIComponent(searchTerm)}`,
         });
 
-        setNotes(notesWithCategories);
+        setNotes(notesData);
       } catch (error) {
         console.error("Błąd podczas pobierania notatek:", error);
       }
     };
 
     fetchNotes();
-  }, []);
+  }, [user, allCategories, selectedCategory, popupNoteId, searchTerm]);
 
   const handleDelete = async (id) => {
+    const note = notes.find((n) => n.id === id);
+    if (!note || note.permission < 1) {
+      console.warn("Brak uprawnień do usunięcia notatki.");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-  
-      const decodedToken = jwtDecode(token);
-      const userId = decodedToken.sub;
-  
-      if (!userId) {
-        console.error("Brak userId w tokenie");
-        return;
-      }
-  
-      // Wysyłamy zapytanie do backendu o usunięcie
-      const response = await fetch(`http://localhost:5000/note/${id}?user_id=${userId}`, {
+      await ApiCall({
         method: "DELETE",
+        url: `/note/${id}`,
       });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        // Usuwamy lokalnie po udanym usunięciu z backendu
-        setNotes(notes.filter((note) => note.id !== id));
-        //alert(data.message); // Można wyświetlić komunikat o sukcesie
-      } else {
-        console.error("Błąd podczas usuwania notatki:", data);
-      }
+
+      setNotes(notes.filter((note) => note.id !== id));
     } catch (error) {
       console.error("Błąd podczas usuwania notatki:", error);
     }
   };
-  
-  
-  
-  
 
   const handleDownload = async (id) => {
+    const note = notes.find((n) => n.id === id);
+    if (!note || note.permission < 1) {
+      console.warn("Brak uprawnień do pobrania notatki.");
+      return;
+    }
+
     try {
-      const response = await fetch(`http://localhost:5000/note/${id}`);
-      const note = await response.json();
+      const note = await ApiCall({
+        method: "GET",
+        url: `/note/${id}`,
+      });
 
       const blob = new Blob([note.content], { type: "text/html" });
       const url = window.URL.createObjectURL(blob);
@@ -103,57 +95,79 @@ const NotesList = ({ searchTerm }) => {
     }
   };
 
-  // Filter notes based on the searchTerm
-  const filteredNotes = notes.filter((note) =>
-    note.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleCategoryChange = (e) => {
+    const selectedId = e.target.value === "" ? 0 : Number(e.target.value);
+    setSelectedCategory(selectedId);
+  };
 
   return (
     <div className="notes-list">
-      {filteredNotes.map((note) => (
-        <div key={note.id} className="note-card">
-          <p>{note.id}</p>
-          <h3
-            className="note-title"
-            style={{ cursor: "pointer" }}
-            onClick={() => navigate(`/editor/${note.id}`)}
-          >
-            <span className="note-owner">
-              {`${note.owner_first_name} ${note.owner_last_name}`}
-            </span>
-            {note.title}
-            <span className="note-category">
-              {note.categories === null ? note.categories: "Prywatny"}
-            </span>
-          </h3>
+      <select
+        className="category-select"
+        onChange={handleCategoryChange}
+        value={selectedCategory ?? ""}
+      >
+        <option value="">Wszystkie kategorie</option>
+        {allCategories.map((cat) => (
+          <option key={cat.id} value={cat.id}>
+            {cat.name}
+          </option>
+        ))}
+      </select>
 
-          <div className="options-menu-container">
-            <MoreVertical
-              className="menu-icon"
-              onClick={() => setMenuOpen(menuOpen === note.id ? null : note.id)}
-            />
+      {notes.length !== 0 &&
+        notes.map((note) => (
+          <div key={note.id} className="note-card">
+            <p>{note.id}</p>
+            <h3
+              className="note-title"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                navigate(`/editor/${note.id}`);
+              }}
+            >
+              <span className="note-owner">
+                {`${note.owner_first_name} ${note.owner_last_name}`}
+              </span>{" "}
+              {note.title}
+              <span className="note-category">
+                {note.categories ? note.categories : "Prywatny"}
+              </span>
+            </h3>
 
-            {menuOpen === note.id && (
-              <div className="dropdown-menu">
-                {note.permission > 1 && (
-                  <button onClick={() => navigate(`/editor/${note.id}`)}>✏️ Edytuj</button>
-                )}
-                <button onClick={() => setPopupNoteId(note.id)}>🔗 Udostępnij</button>
-                <button onClick={() => handleDownload(note.id)}>📄 Pobierz</button>
-                {note.permission >= 1 && (
-                  <button onClick={() => handleDelete(note.id)}>🗑️ Usuń</button>
-                )}
-              </div>
-            )}
+            <div className="options-menu-container">
+              <MoreVertical
+                className="menu-icon"
+                onClick={() => setMenuOpen(menuOpen === note.id ? null : note.id)}
+              />
+
+              {menuOpen === note.id && (
+                <div className="dropdown-menu">
+                  {note.permission > 1 && (
+                    <button onClick={() => navigate(`/editor/${note.id}`)}>✏️ Edytuj</button>
+                  )}
+                  {note.permission > 1 && (
+                    <button onClick={() => setPopupNoteId(note.id)}>🔗 Udostępnij</button>
+                  )}
+                  <button onClick={() => handleDownload(note.id)}>📄 Pobierz</button>
+                  {note.permission == 3 && (
+                    <button onClick={() => handleDelete(note.id)}>🗑️ Usuń</button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
 
-      {/* Popup for sharing categories */}
-      {popupNoteId && (
+      {popupNoteId && notes.find((n) => n.id === popupNoteId)?.permission > 1 && (
         <div className="popup-overlay">
           <div className="popup">
-            <TagForm noteId={popupNoteId} onSave={() => setPopupNoteId(null)} />
+            <TagForm
+              noteId={popupNoteId}
+              onSave={() => setPopupNoteId(null)}
+              userId={user.id}
+              permission={notes.find((n) => n.id === popupNoteId)?.permission}
+            />
             <button className="close-btn" onClick={() => setPopupNoteId(null)}>
               Zamknij
             </button>
@@ -165,4 +179,3 @@ const NotesList = ({ searchTerm }) => {
 };
 
 export default NotesList;
-

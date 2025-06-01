@@ -9,3 +9,4 @@ dotenv
 python-jose
 pyjwt
 sqlalchemy
+httpx

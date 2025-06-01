@@ -8,4 +8,3 @@ class UserCategory(BaseModel):
 
     class Config:
         from_attributes = True
-

@@ -6,8 +6,8 @@ const UserMenu = () => {
   return (
     <div className="usermenu-container">
       <div className="usermenu">
-        <UserInterfaceButton label="Nowy użytkownik" url="/NewUser" />
-        <UserInterfaceButton label="Kategorie" url="/categories" />
+        <UserInterfaceButton label="Dodaj Kategorie" url="/categories" />
+        <UserInterfaceButton label="Kategorie" url="/categoryList" />
       </div>
     </div>
   );

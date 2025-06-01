@@ -1,9 +1,10 @@
 import React from "react";
+import keycloak from "../auth/keycloak";
 
-const LogoutButton = ({kc}) => {
+const LogoutButton = () => {
   return (
-    <button className="logout-button" onClick={() => kc.logout()}>
-      Log Out
+    <button className="logout-button" onClick={() => keycloak.logout()}>
+      Wyloguj
     </button>
   );
 };

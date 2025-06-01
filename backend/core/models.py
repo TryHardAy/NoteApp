@@ -1,6 +1,7 @@
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKeyConstraint, Index, Integer, String, Table, Text
+from sqlalchemy import Column, ForeignKeyConstraint, Index, Integer, String, Table, Text, text
+from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
@@ -14,7 +15,12 @@ class Categories(Base):
     name: Mapped[str] = mapped_column(String(100))
 
     user: Mapped[List['Users']] = relationship('Users', secondary='UserCategories', back_populates='category')
-    CategoryNotes: Mapped[List['CategoryNotes']] = relationship('CategoryNotes', back_populates='category')
+    CategoryNotes: Mapped[List['CategoryNotes']] = relationship(
+        'CategoryNotes', 
+        back_populates='category', 
+        cascade="all, delete-orphan", 
+        passive_deletes=True
+    )
 
 
 class Notes(Base):
@@ -24,7 +30,12 @@ class Notes(Base):
     title: Mapped[Optional[str]] = mapped_column(String(50))
     content: Mapped[Optional[str]] = mapped_column(Text)
 
-    CategoryNotes: Mapped[List['CategoryNotes']] = relationship('CategoryNotes', back_populates='note')
+    CategoryNotes: Mapped[List['CategoryNotes']] = relationship(
+        'CategoryNotes', 
+        back_populates='note',
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
     UserNotes: Mapped[List['UserNotes']] = relationship(
         'UserNotes', 
         back_populates='note',
@@ -40,6 +51,7 @@ class Users(Base):
     email: Mapped[str] = mapped_column(String(100))
     name: Mapped[Optional[str]] = mapped_column(String(50))
     last_name: Mapped[Optional[str]] = mapped_column(String(50))
+    is_admin: Mapped[Optional[int]] = mapped_column(TINYINT(1), server_default=text("'0'"))
 
     category: Mapped[List['Categories']] = relationship('Categories', secondary='UserCategories', back_populates='user')
     UserNotes: Mapped[List['UserNotes']] = relationship('UserNotes', back_populates='user')

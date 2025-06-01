@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from core.db_connection import get_db
 from notes.models import Note, NoteLabel, UpsertNote
+from users.models import User
+from users.auth import authenticate_user
 import notes.service as service
 
 
@@ -9,58 +11,50 @@ router = APIRouter(tags=["Notes"])
 
 
 
-@router.post("/note/create/{user_id}", response_model=Note)  
+@router.post("/note/create", response_model=Note)  
 async def create_note(
     note: UpsertNote, 
-    user_id: str, 
-    session: Session = Depends(get_db)
+    session: Session = Depends(get_db),
+    _authenticated_user: User = Depends(authenticate_user)
     ):
-    return service.create_note(note, user_id, session)
+    return service.create_note(note, _authenticated_user.id, session)
 
 
-@router.get("/note/{note_id}/{user_id}", response_model=Note)
+@router.get("/note/{note_id}", response_model=Note)
 async def get_note(
     note_id: int, 
-    user_id: str, 
-    session: Session = Depends(get_db)
+    session: Session = Depends(get_db),
+    _authenticated_user: User = Depends(authenticate_user)
     ):
-    return service.get_note(note_id, user_id, session)
+    return service.get_note(note_id, _authenticated_user.id, session)
 
 
-@router.put("/note/{note_id}/{user_id}", response_model=Note)
+@router.put("/note/{note_id}", response_model=Note)
 async def update_note(
     note_id: int, 
-    user_id: str, 
     note: UpsertNote, 
-    session: Session = Depends(get_db)
+    session: Session = Depends(get_db),
+    _authenticated_user: User = Depends(authenticate_user)
     ):
-    return service.update_note(note_id, user_id, note, session)
+    return service.update_note(note_id, _authenticated_user.id, note, session)
 
 
-@router.delete("/note/{note_id}/{user_id}", response_model=Note)
+@router.delete("/note/{note_id}", response_model=Note)
 async def delete_note(
     note_id: int, 
-    user_id: str, 
-    session: Session = Depends(get_db)
+    session: Session = Depends(get_db),
+    _authenticated_user: User = Depends(authenticate_user)
     ):
-    return service.delete_note(note_id, user_id, session)
+    return service.delete_note(note_id, _authenticated_user.id, session)
 
 
-@router.get("/notes/{user_id}", response_model=list[NoteLabel])
+@router.get("/notes/{category_id}", response_model=list[NoteLabel])
 async def get_user_notes(
-    user_id: str, 
+    category_id: int = 0,
     prefix: str = "", 
-    session: Session = Depends(get_db)
+    session: Session = Depends(get_db),
+    _authenticated_user: User = Depends(authenticate_user)
     ):
-    return service.get_user_notes(user_id, prefix, session)
+    return service.get_user_notes(_authenticated_user.id, category_id, prefix, session)
 
-
-# @router.get("/notes/{user_id}")
-# async def get_user_notes(user_id: str) -> list[NoteTitle]:
-#     notes: list[dict] = query_db(dq.get_user_notes, user_id)
-#     # Zwracamy zaktualizowaną odpowiedź, uwzględniając permission
-#     return [
-#         NoteTitle(id=note["id"], title=note["title"], permission=note["permission"])
-#         for note in notes
-#     ]
 

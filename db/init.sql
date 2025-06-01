@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS Users(
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(50),
     last_name VARCHAR(50),
-    email VARCHAR(100) NOT NULL
+    email VARCHAR(100) NOT NULL,
+    is_admin BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS Categories(

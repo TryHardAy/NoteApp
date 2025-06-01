@@ -21,4 +21,3 @@ routes: list[APIRouter] = [
 def add_routes(app: FastAPI) -> None:
     for route in routes:
         app.include_router(route)
-

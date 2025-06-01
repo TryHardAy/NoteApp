@@ -4,6 +4,7 @@ from sqlalchemy import select, delete, insert, case, literal
 from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException
 from core.models import t_UserCategories, Categories
+from users.service import is_user_admin
 
 
 
@@ -36,36 +37,43 @@ def remove_user_from_category(user_id: str, category_id: int, session: Session):
 
 
 def get_user_categories(user_id: str, session: Session) -> list[UserCategory]:
-    # userCategoryAlias = aliased(t_UserCategories)
 
-    stmt = (
-        select(
-            Categories.id, 
-            Categories.name,
-            case(
-                (t_UserCategories.c.user_id == user_id, True),
-                else_=False
-            ).label("has_user")
-        )
-        .outerjoin(
-            t_UserCategories, 
-            Categories.id == t_UserCategories.c.category_id
-        )
-    )
-    
+    stmt1 = select(Categories)
+
     try:
-        categories = session.execute(stmt).fetchall()
+        categories = session.scalars(stmt1).all()
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while fetching categories")
 
-    return [UserCategory.model_validate(category) for category in categories]
+    stmt2 = select(t_UserCategories.c.category_id).where(t_UserCategories.c.user_id == user_id)
+
+    try:
+        userCategories = session.scalars(stmt2).all()
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Error while fetching UserCategories")
+
+    result = []
+
+    for category in categories:
+        result.append(
+            UserCategory(
+                id=category.id, 
+                name=category.name,
+                has_user=(category.id in userCategories),
+            )
+        )
+
+    return result
 
 
 def update_user_categories(
     categories: list[UserCategory], 
     user_id: str, 
+    potential_admin_id: str,
     session: Session
     ):
+    if not is_user_admin(potential_admin_id, session):
+        raise HTTPException(status_code=403, detail="This user has no permission to get user categories")
     
     to_remove = []
     to_add = []
@@ -74,19 +82,21 @@ def update_user_categories(
             to_add.append(category.id)
         else:
             to_remove.append(category.id)
+    print(f'{to_remove=}')
 
-    remove_stmt = (
-        delete(t_UserCategories)
-        .where(
-            t_UserCategories.c.user_id == user_id,
-            t_UserCategories.c.category_id.in_(to_remove)
+    if len(to_remove) != 0:
+        remove_stmt = (
+            delete(t_UserCategories)
+            .where(
+                t_UserCategories.c.user_id == user_id,
+                t_UserCategories.c.category_id.in_(to_remove)
+            )
         )
-    )
-
-    try:
-        session.execute(remove_stmt)
-    except Exception as e:
-        raise HTTPException(status_code=404, detail="Error while removing categories from user")
+        try:
+            session.execute(remove_stmt)
+            session.commit()
+        except Exception as e:
+            raise HTTPException(status_code=404, detail="Error while removing categories from user")
 
     is_exists_stmt = (
         select(t_UserCategories.c.category_id)
@@ -100,7 +110,7 @@ def update_user_categories(
         result = session.scalars(is_exists_stmt).all()
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while fetching categories")
-    
+
     to_add2 = [{"user_id": user_id, "category_id": id} for id in to_add if id not in result]
 
     if len(to_add2) == 0:
@@ -108,6 +118,7 @@ def update_user_categories(
 
     try:
         result = session.execute(t_UserCategories.insert().values(to_add2))
+        session.commit()
     except Exception as e:
         raise HTTPException(status_code=404, detail="Error while adding categories to user")
     
@@ -118,4 +129,3 @@ def update_user_categories(
 
 
     
-
