@@ -78,7 +78,7 @@ const Editor = () => {
       } else {
         await ApiCall({
           method: "POST",
-          url: `/note/create/`,
+          url: `/note/create`,
           data: payload,
         });
       }

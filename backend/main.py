@@ -2,7 +2,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from core.routers import add_routes
-
+import os
 
 
 @asynccontextmanager
@@ -20,15 +20,10 @@ add_routes(app)
 
 
 
-config = {
-    "host": "db",
-    "user": "root",
-    "password": "password",
-    "database": "NotesDB",
-}
-
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+print(f'{FRONTEND_URL=}')
 origins = [
-    "http://localhost:5173",  # frontend
+    FRONTEND_URL,  # frontend
     #"http://localhost:5000" #backend
 ]
 
